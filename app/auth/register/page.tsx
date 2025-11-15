@@ -88,6 +88,7 @@ const RegisterPage = () => {
       //   uploadedUrls = await uploadPhotos(filesToUpload);
       // }
 
+      await uploadPhotos([companyPhotoFile].filter(Boolean) as File[]);
 
       router.push("/");
     } catch (err: any) {
@@ -288,7 +289,7 @@ const RegisterPage = () => {
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <input
                 type="file"
                 name="ownerPhoto"
@@ -309,7 +310,7 @@ const RegisterPage = () => {
               {ownerPhotoName && (
                 <p className="mt-1 text-sm text-gray-300">Selected: {ownerPhotoName}</p>
               )}
-            </div>
+            </div> */}
           </div>
         )}
         <div className="mt-3.5 flex gap-2 justify-stretch">

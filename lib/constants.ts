@@ -1,14 +1,16 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export type User = {
-  id: string;
-  email: string;
+  user_id: number;
+  role: string;
+  status: string;
+  created_at: string;
   first_name: string;
+  locale: string;
   last_name: string;
   phone_number: string;
-  role: string;
-  locale: string;
-  created_at?: string;
+  email: string;
+  company_id: number;
 };
 
 export type AuthStore = {

@@ -36,11 +36,28 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
+          const accessToken = data.access_token;
+          const refreshToken = data.refresh_token;
+
+          // Fetch user data with the access token
+          const userResponse = await fetch(`${API_BASE}/user/me`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+            },
+          });
+
+          if (!userResponse.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+
+          const userData = await userResponse.json();
+
           set({
             isAuthenticated: true,
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
-            user: data.user,
+            accessToken,
+            refreshToken,
+            user: userData,
             loading: false,
             error: null,
           });
@@ -87,13 +104,28 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
-          console.log(data.accessToken);
-          console.log(data.refresh_token)
+          const accessToken = data.access_token;
+          const refreshToken = data.refresh_token;
+
+          // Fetch user data with the access token
+          const userResponse = await fetch(`${API_BASE}/user/me`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+            },
+          });
+
+          if (!userResponse.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+
+          const userData = await userResponse.json();
+
           set({
             isAuthenticated: true,
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
-            user: data.user,
+            accessToken,
+            refreshToken,
+            user: userData,
             loading: false,
             error: null,
           });
@@ -163,18 +195,27 @@ export const useAuthStore = create<AuthStore>()(
             const uploadUrlData = await uploadUrlResponse.json();
             console.log("Upload URL response:", uploadUrlData);
 
-            const s3PresignedUrl = uploadUrlData.finalurl;
+            // const s3PresignedUrl = uploadUrlData.finalurl;
+            const s3PresignedUrl = uploadUrlData.put_url.url;
             if (!s3PresignedUrl) {
               throw new Error("No presigned URL received from server");
             }
 
             // Step 2: Upload the file to S3
+            const { url, fields } = uploadUrlData.put_url;
+            const formData = new FormData();
+            Object.entries(fields).forEach(([key, value]) => {
+              formData.append(key, value as string);
+            });
+            formData.append("file", file);
+            console.log("Uploading file to S3 with fields:", fields);
+
             const uploadResponse = await fetch(s3PresignedUrl, {
-              method: "PUT",
+              method: "POST",
               // headers: {
               //   "Content-Type": file.type || "application/octet-stream",
               // },
-              body: file,
+              body: formData,
             });
 
             if (!uploadResponse.ok) {
@@ -183,8 +224,24 @@ export const useAuthStore = create<AuthStore>()(
 
             console.log("File uploaded successfully to S3");
 
-            // Extract the file URL from the presigned URL (remove query params)
-            const fileUrl = s3PresignedUrl.split("?")[0];
+            // Step 3: Upload the url to the backend
+            const company_id = useAuthStore.getState().user?.company_id;
+            console.log(company_id)
+            const fileUrl = uploadUrlData.finalurl;
+            const urlUploadResponse = await fetch(
+              `${API_BASE}/uploads/companies/${company_id}/photo?file_url=${encodeURIComponent(fileUrl)}`,
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
+                },
+              });
+
+            if (!urlUploadResponse.ok) {
+              throw new Error(`Failed to register file URL: ${urlUploadResponse.status} ${urlUploadResponse.statusText}`);
+            }
+
+            console.log("File URL registered successfully");
             uploadedUrls.push(fileUrl);
           }
 
@@ -197,6 +254,8 @@ export const useAuthStore = create<AuthStore>()(
           throw error;
         }
       },
+
+
     }),
     {
       name: "auth-store",
