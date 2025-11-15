@@ -1,4 +1,4 @@
-import DashboardCard from "../DashboardCard/DashboardCard";
+import DashboardCard from "./DashboardCard";
 
 const PendingOrders = () => {
   const orders = [

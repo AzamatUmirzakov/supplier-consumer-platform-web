@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import DashboardCard from "../DashboardCard/DashboardCard";
+import DashboardCard from "./DashboardCard";
 
 ChartJS.register(
   CategoryScale,

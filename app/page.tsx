@@ -1,5 +1,5 @@
-import DataPanel from "@/app/components/DataPanel/DataPanel";
-import DataChart from "./components/DataChart/DataChart";
+import DataPanel from "@/app/components/DataPanel";
+import DataChart from "./components/DataChart";
 
 export default function Home() {
   return (

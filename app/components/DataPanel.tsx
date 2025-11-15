@@ -1,5 +1,5 @@
 "use client";
-import DashboardCard from "@/app/components/DashboardCard/DashboardCard";
+import DashboardCard from "@/app/components/DashboardCard";
 import { Chart, ChartData, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import PendingOrders from "./PendingOrders";

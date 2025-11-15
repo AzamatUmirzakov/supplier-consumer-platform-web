@@ -1,0 +1,38 @@
+"use client";
+import { useState } from "react";
+import CatalogItem from "./components/CatalogItem";
+import SearchInput from "./components/SearchInput";
+import { useCatalogStore } from "@/lib/catalog-store";
+import SideSheet from "./components/SideSheet";
+
+const CatalogPage = () => {
+  const [open, setOpen] = useState(false);
+  const catalog_items = useCatalogStore((state) => state.items);
+  const setCurrentItemId = useCatalogStore((state) => state.setCurrentItemId);
+  const handleClick = (id: string) => {
+    setOpen(true);
+    setCurrentItemId(id);
+  }
+
+  return (
+    <div className="py-5 px-10 flex-1">
+      <h1 className="text-4xl font-bold mb-3">Catalog</h1>
+      <div className="border-b border-gray-300 pb-4 mb-6">
+        <SearchInput />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {catalog_items.map((item) => (
+          <div className="flex" key={item.id} onClick={() => handleClick(item.id)}>
+            <CatalogItem
+              item={item}
+            />
+          </div>
+        ))}
+      </div>
+
+      <SideSheet isOpen={open} onClose={() => setOpen(false)} />
+    </div>
+  )
+}
+
+export default CatalogPage;
