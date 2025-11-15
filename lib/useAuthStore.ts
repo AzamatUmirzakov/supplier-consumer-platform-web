@@ -43,6 +43,7 @@ export type AuthStore = {
   }) => Promise<void>;
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
+  uploadPhotos: (files: File[]) => Promise<string[]>;
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -128,6 +129,8 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
+          console.log(data.accessToken);
+          console.log(data.refresh_token)
           set({
             isAuthenticated: true,
             accessToken: data.access_token,
@@ -165,6 +168,76 @@ export const useAuthStore = create<AuthStore>()(
           refreshToken,
           isAuthenticated: true,
         });
+      },
+
+      uploadPhotos: async (files: File[]) => {
+        if (files.length === 0) {
+          return [];
+        }
+
+        const uploadedUrls: string[] = [];
+
+        try {
+          for (const file of files) {
+            // Step 1: Get the presigned S3 URL
+            const fileExtension = file.name.split(".").pop() || "jpg";
+            const uploadUrlResponse = await fetch(
+              `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
+              {
+                method: "GET",
+                headers: {
+                  "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
+                },
+              }
+            );
+
+            if (!uploadUrlResponse.ok) {
+              let errorMessage = "Failed to get upload URL";
+              try {
+                const errorData = await uploadUrlResponse.json();
+                errorMessage = errorData.detail || errorData.message || errorMessage;
+              } catch (e) {
+                errorMessage = `Server error: ${uploadUrlResponse.status} ${uploadUrlResponse.statusText}`;
+              }
+              throw new Error(errorMessage);
+            }
+
+            const uploadUrlData = await uploadUrlResponse.json();
+            console.log("Upload URL response:", uploadUrlData);
+
+            const s3PresignedUrl = uploadUrlData.finalurl;
+            if (!s3PresignedUrl) {
+              throw new Error("No presigned URL received from server");
+            }
+
+            // Step 2: Upload the file to S3
+            const uploadResponse = await fetch(s3PresignedUrl, {
+              method: "PUT",
+              // headers: {
+              //   "Content-Type": file.type || "application/octet-stream",
+              // },
+              body: file,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error(`Failed to upload to S3: ${uploadResponse.status} ${uploadResponse.statusText}`);
+            }
+
+            console.log("File uploaded successfully to S3");
+
+            // Extract the file URL from the presigned URL (remove query params)
+            const fileUrl = s3PresignedUrl.split("?")[0];
+            uploadedUrls.push(fileUrl);
+          }
+
+          return uploadedUrls;
+        } catch (error: any) {
+          const errorMessage = error instanceof TypeError
+            ? "Failed to connect to server for file upload"
+            : error.message;
+          set({ error: errorMessage });
+          throw error;
+        }
       },
     }),
     {

@@ -11,11 +11,14 @@ const RegisterPage = () => {
   const register = useAuthStore((state) => state.register);
   const loading = useAuthStore((state) => state.loading);
   const error = useAuthStore((state) => state.error);
+  const uploadPhotos = useAuthStore((state) => state.uploadPhotos);
 
   const [companyType, setCompanyType] = useState<CompanyType | null>(null);
   const [formState, setFormState] = useState(1);
   const [companyPhotoName, setCompanyPhotoName] = useState<string>("");
   const [ownerPhotoName, setOwnerPhotoName] = useState<string>("");
+  const [companyPhotoFile, setCompanyPhotoFile] = useState<File | null>(null);
+  const [ownerPhotoFile, setOwnerPhotoFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -50,6 +53,7 @@ const RegisterPage = () => {
     e.preventDefault();
 
     try {
+      // Register with uploaded URLs
       await register({
         company: {
           name: formData.companyName,
@@ -65,8 +69,19 @@ const RegisterPage = () => {
           password: formData.password,
           role: "owner",
           locale: "en",
-        }
+        },
       });
+
+      // Collect files to upload
+      // const filesToUpload = [companyPhotoFile, ownerPhotoFile].filter(Boolean) as File[];
+      // let uploadedUrls: string[] = [];
+
+      // // Upload files if any are provided
+      // if (filesToUpload.length > 0) {
+      //   uploadedUrls = await uploadPhotos(filesToUpload);
+      // }
+
+
       router.push("/");
     } catch (err: any) {
       console.error("Registration error:", err.message);
@@ -152,7 +167,10 @@ const RegisterPage = () => {
                 id="companyPhoto"
                 className="hidden"
                 accept="image/*"
-                onChange={(e) => setCompanyPhotoName(e.target.files?.[0]?.name || "")}
+                onChange={(e) => {
+                  setCompanyPhotoName(e.target.files?.[0]?.name || "");
+                  setCompanyPhotoFile(e.target.files?.[0] || null);
+                }}
               />
               <label
                 htmlFor="companyPhoto"
@@ -255,7 +273,10 @@ const RegisterPage = () => {
                 id="ownerPhoto"
                 className="hidden"
                 accept="image/*"
-                onChange={(e) => setOwnerPhotoName(e.target.files?.[0]?.name || "")}
+                onChange={(e) => {
+                  setOwnerPhotoName(e.target.files?.[0]?.name || "");
+                  setOwnerPhotoFile(e.target.files?.[0] || null);
+                }}
               />
               <label
                 htmlFor="ownerPhoto"
