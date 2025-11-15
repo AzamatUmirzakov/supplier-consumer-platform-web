@@ -1,6 +1,6 @@
 "use client";
 import { useCatalogStore } from "@/lib/catalog-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type SideSheetProps = {
   isOpen: boolean;
@@ -12,8 +12,24 @@ type SideSheetProps = {
 export default function SideSheet(props: SideSheetProps) {
   const currentItemId = useCatalogStore((state) => state.currentItemId);
   const currentItem = useCatalogStore((state) => state.items.find(item => item.id === currentItemId));
-  const { category = "", description = "", price = 0, name = "" } = currentItem || {};
+  const updateItem = useCatalogStore((state) => state.updateItem);
   const { isOpen, onClose, onSave, widthClass } = props;
+
+  const [editData, setEditData] = useState({
+    name: "",
+    description: "",
+    price: 0,
+  });
+
+  useEffect(() => {
+    if (currentItem) {
+      setEditData({
+        name: currentItem.name,
+        description: currentItem.description,
+        price: currentItem.price,
+      });
+    }
+  }, [currentItem]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -24,6 +40,14 @@ export default function SideSheet(props: SideSheetProps) {
   }, [onClose]);
 
   const handleSave = () => {
+    if (currentItem) {
+      updateItem({
+        ...currentItem,
+        name: editData.name,
+        description: editData.description,
+        price: editData.price,
+      });
+    }
     onClose();
     onSave?.();
   }
@@ -60,24 +84,37 @@ export default function SideSheet(props: SideSheetProps) {
         <div className="p-4 overflow-auto h-[calc(100dvh-56px)]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-400 rounded" />
-              <h3 className="text-2xl font-semibold">{name}</h3>
+              <img src={currentItem?.preview} alt={editData.name} className="w-10 h-10 object-cover rounded" />
+              <input
+                type="text"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                className="text-lg font-semibold bg-[#0a0a0a] text-white rounded px-2 py-1 flex-1 min-w-0"
+              />
             </div>
             <div>
-              <span className="inline-block text-sm px-3 py-1 rounded-full bg-[#2a2a2a] text-white">{category}</span>
+              <span className="inline-block text-sm px-3 py-1 rounded-full bg-[#2a2a2a] text-white">{currentItem?.category}</span>
             </div>
-            <textarea value={description} className="h-40 bg-[#0a0a0a] rounded text-white" >
-            </textarea>
-            <div className="flex items-center gap-3">
+            <textarea
+              value={editData.description}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              className="w-full p-2 h-40 bg-[#0a0a0a] rounded text-white border border-black/20 focus:border-white transition-colors"
+            />
+            <div className="flex items-center gap-2">
               <span className="text-lg font-semibold">Price:</span>
-              <input type="text" className="w-28 h-6 bg-[#0a0a0a] p-2 rounded" value={price} readOnly />
+              <input
+                type="number"
+                className="w-20 bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
+                value={editData.price}
+                onChange={(e) => setEditData({ ...editData, price: parseFloat(e.target.value) || 0 })}
+              />
             </div>
             <div className="pt-8">
               <button
                 className="w-full cursor-pointer py-2 rounded bg-[#0a0a0a] text-white font-semibold border border-black hover:border-white transition-colors"
                 onClick={handleSave}
               >
-                save
+                Save
               </button>
             </div>
           </div>

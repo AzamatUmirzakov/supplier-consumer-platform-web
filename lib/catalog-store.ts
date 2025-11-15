@@ -15,7 +15,9 @@ export type CatalogItem = {
 type CatalogStore = {
   items: CatalogItem[];
   currentItemId: string | null;
+  searchTerm: string;
   setCurrentItemId: (id: string | null) => void;
+  setSearchTerm: (term: string) => void;
   addItem: (item: CatalogItem) => void;
   updateItem: (item: CatalogItem) => void;
   deleteItem: (id: string) => void;
@@ -54,7 +56,9 @@ const initialItems: CatalogItem[] = [
 export const useCatalogStore = create<CatalogStore>((set) => ({
   items: initialItems,
   currentItemId: null,
+  searchTerm: "",
   setCurrentItemId: (id) => set({ currentItemId: id }),
+  setSearchTerm: (term) => set({ searchTerm: term }),
   addItem: (item) => set((state) => ({ items: [...state.items, item] })),
   updateItem: (updated) =>
     set((state) => ({
