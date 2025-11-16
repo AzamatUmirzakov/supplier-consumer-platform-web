@@ -2,13 +2,15 @@
 
 import { useCitiesStore } from "@/lib/cities-store";
 import { useCompanyStore } from "@/lib/company-store";
+import { useAuthStore } from "@/lib/useAuthStore";
 import { useEffect, useState } from "react";
 import { User } from "@/lib/constants";
 import AddUserSideSheet from "./components/AddUserSideSheet";
 import EditUserSideSheet from "./components/EditUserSideSheet";
 
 function CompanyPage() {
-  const { company, users, loading, error, getCompanyDetails, fetchUsers, addUser, updateUser } = useCompanyStore();
+  const { company, users, loading, error, getCompanyDetails, fetchUsers, addUser, updateUser, deleteUser } = useCompanyStore();
+  const currentUser = useAuthStore((state) => state.user);
   const cities = useCitiesStore(state => state.cities);
   const city = cities.find(city => String(city.city_id) === company.location);
 
@@ -182,7 +184,9 @@ function CompanyPage() {
           }
           return Promise.resolve();
         }}
+        onDelete={deleteUser}
         user={selectedUser}
+        currentUserId={currentUser?.user_id}
       />
     </div>
   );

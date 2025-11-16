@@ -13,12 +13,14 @@ type EditUserSideSheetProps = {
     password?: string;
     role: string;
   }) => Promise<void>;
+  onDelete?: (userId: number) => Promise<void>;
   user: User | null;
+  currentUserId?: number;
   widthClass?: string;
 };
 
 export default function EditUserSideSheet(props: EditUserSideSheetProps) {
-  const { isOpen, onClose, onSave, user, widthClass } = props;
+  const { isOpen, onClose, onSave, onDelete, user, currentUserId, widthClass } = props;
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -79,6 +81,31 @@ export default function EditUserSideSheet(props: EditUserSideSheetProps) {
     } catch (error: any) {
       console.error('Failed to update user:', error);
       alert(`Failed to update user: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!user || !onDelete) return;
+
+    // Prevent deleting current user
+    if (currentUserId && user.user_id === currentUserId) {
+      alert("You cannot delete your own account");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}? This action cannot be undone.`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onDelete(user.user_id);
+      onClose();
+    } catch (error: any) {
+      console.error('Failed to delete user:', error);
+      alert(`Failed to delete user: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -230,6 +257,17 @@ export default function EditUserSideSheet(props: EditUserSideSheetProps) {
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>
+
+              {onDelete && currentUserId !== user.user_id && (
+                <button
+                  className="w-full cursor-pointer py-2 rounded bg-red-900 text-white font-semibold border border-red-700 hover:border-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleDelete}
+                  disabled={loading || user.status === 'suspended'}
+                  title={user.status === 'suspended' ? 'Cannot delete suspended user' : ''}
+                >
+                  Delete User
+                </button>
+              )}
             </div>
           </div>
         </div>

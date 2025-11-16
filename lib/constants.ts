@@ -77,4 +77,5 @@ export type CompanyStore = {
     password?: string;
     role: string;
   }) => Promise<void>;
+  deleteUser: (userId: number) => Promise<void>;
 };
