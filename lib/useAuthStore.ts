@@ -255,6 +255,37 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+      updateUser: async (data) => {
+        set({ loading: true, error: null });
+        try {
+          const accessToken = useAuthStore.getState().accessToken;
+          const response = await fetch(`${API_BASE}/user/me`, {
+            method: "PATCH",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            let errorMessage = "Failed to update user";
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+              errorMessage = `Server error: ${response.status} ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
+          }
+
+          const updatedUser = await response.json();
+          set({ user: updatedUser, loading: false });
+        } catch (error: any) {
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
 
     }),
     {

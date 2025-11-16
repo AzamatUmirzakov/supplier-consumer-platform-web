@@ -43,4 +43,11 @@ export type AuthStore = {
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   uploadPhotos: (files: File[]) => Promise<string[]>;
+  updateUser: (data: {
+    first_name: string;
+    last_name: string;
+    phone_number: string;
+    email: string;
+    locale: string;
+  }) => Promise<void>;
 };
