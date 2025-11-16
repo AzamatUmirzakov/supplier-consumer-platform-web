@@ -5,8 +5,10 @@ import SearchInput from "./components/SearchInput";
 import { useCatalogStore } from "@/lib/catalog-store";
 import AddSideSheet from "./components/AddSideSheet";
 import EditSideSheet from "./components/EditSideSheet";
+import { useTranslations } from "next-intl";
 
 const CatalogPage = () => {
+  const t = useTranslations("Catalogs");
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const catalog_items = useCatalogStore((state) => state.items) || [];
@@ -38,19 +40,19 @@ const CatalogPage = () => {
 
   return (
     <div className="py-5 px-10 flex-1">
-      <h1 className="text-4xl font-bold mb-3">Catalog</h1>
+      <h1 className="text-4xl font-bold mb-3">{t("title")}</h1>
       <div className="flex justify-between border-b border-gray-300 pb-4 mb-6">
-        <SearchInput />
-        <button className="cursor-pointer bg-[#1a1a1a] hover:bg-[#333333] transition-colors text-white rounded px-4 py-2" onClick={handleAddItem}>Add Item</button>
+        <SearchInput placeholder={t("placeholder")} />
+        <button className="cursor-pointer bg-[#1a1a1a] hover:bg-[#333333] transition-colors text-white rounded px-4 py-2" onClick={handleAddItem}>{t("item.add_item")}</button>
       </div>
       {loading && (
         <div className="text-gray-400 text-center mt-20">
-          Loading products...
+          {t("loading_products")}
         </div>
       )}
       {!loading && catalog_items.length === 0 && (
         <div className="text-gray-400 text-center mt-20">
-          No items in the catalog. Please add items to see them here.
+          {t("no_items")}
         </div>
       )}
       {catalog_items.length > 0 && (
@@ -63,7 +65,7 @@ const CatalogPage = () => {
             ))
           ) : (
             <div className="col-span-full text-center text-gray-400 py-10">
-              No items found matching "{searchTerm}"
+              {t("no_items_found")} "{searchTerm}"
             </div>
           )}
         </div>)

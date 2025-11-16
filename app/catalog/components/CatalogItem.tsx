@@ -1,10 +1,12 @@
 import { CatalogItem as CatalogItemType } from "@/lib/catalog-store";
+import { useTranslations } from "next-intl";
 
 type CatalogItemProps = {
   item: CatalogItemType;
 };
 
 const CatalogItem = ({ item }: CatalogItemProps) => {
+  const t = useTranslations("Catalogs");
   return (
     <div className="rounded-lg bg-[#1a1a1a] mb-4 flex flex-col w-fit cursor-pointer flex-1">
       {item.picture_url ? (
@@ -22,24 +24,24 @@ const CatalogItem = ({ item }: CatalogItemProps) => {
 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between items-center">
-            <span className="text-gray-400">Retail Price:</span>
+            <span className="text-gray-400">{t("item.retail_price")}:</span>
             <span className="font-semibold">{item.retail_price} ₸</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-400">Bulk Price:</span>
+            <span className="text-gray-400">{t("item.bulk_price")}:</span>
             <span className="font-semibold">{item.bulk_price} ₸</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-400">Stock:</span>
+            <span className="text-gray-400">{t("item.quantity")}:</span>
             <span className={item.stock_quantity <= item.threshold ? "text-red-400" : "text-green-400"}>
               {item.stock_quantity} {item.unit}
             </span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-400">Min Order:</span>
+            <span className="text-gray-400">{t("item.minimum_order")}:</span>
             <span>{item.minimum_order} {item.unit}</span>
           </div>
         </div>

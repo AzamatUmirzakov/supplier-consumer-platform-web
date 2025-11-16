@@ -1,5 +1,6 @@
 "use client";
 import { useCatalogStore } from "@/lib/catalog-store";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 type AddSideSheetProps = {
@@ -9,6 +10,7 @@ type AddSideSheetProps = {
 };
 
 export default function AddSideSheet(props: AddSideSheetProps) {
+  const t = useTranslations("Catalogs");
   const addItem = useCatalogStore((state) => state.addItem);
   const { isOpen, onClose, widthClass } = props;
 
@@ -110,13 +112,13 @@ export default function AddSideSheet(props: AddSideSheetProps) {
           ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="p-4 border-b border-black/10 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Add Item</h2>
+          <h2 className="text-xl font-semibold">{t("item.add_item")}</h2>
           <button
             aria-label="Close"
             onClick={onClose}
             className="rounded px-3 py-1 bg-[#0a0a0a] cursor-pointer border border-black hover:border-white transition-colors"
           >
-            Close
+            {t("item.close_sidebar")}
           </button>
         </div>
         <div className="p-4 overflow-auto h-[calc(100dvh-56px)]">
@@ -130,20 +132,20 @@ export default function AddSideSheet(props: AddSideSheetProps) {
               <input
                 type="text"
                 value={formData.name}
-                placeholder="Name"
+                placeholder={t("item.name")}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="text-lg font-semibold bg-[#0a0a0a] text-white rounded px-2 py-1 flex-1 min-w-0"
               />
             </div>
             <textarea
               value={formData.description}
-              placeholder="Description"
+              placeholder={t("item.description")}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full p-2 h-40 bg-[#0a0a0a] rounded text-white border border-black/20 focus:border-white transition-colors"
             />
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Retail Price</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.retail_price")}</label>
                 <input
                   type="number"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -152,7 +154,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Bulk Price</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.bulk_price")}</label>
                 <input
                   type="number"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -161,7 +163,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Stock Quantity</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.quantity")}</label>
                 <input
                   type="number"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -170,7 +172,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Threshold</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.threshold")}</label>
                 <input
                   type="number"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -179,7 +181,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Minimum Order</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.minimum_order")}</label>
                 <input
                   type="number"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -188,7 +190,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase tracking-wide text-gray-400">Unit</label>
+                <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.unit")}</label>
                 <input
                   type="text"
                   className="bg-[#0a0a0a] px-2 py-1 rounded text-white border border-black/20 focus:border-white transition-colors"
@@ -199,7 +201,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wide text-gray-400">Images</label>
+              <label className="text-xs uppercase tracking-wide text-gray-400">{t("item.images")}</label>
               <div className="flex gap-2 flex-wrap">
                 {imagePreviews.map((preview, index) => (
                   <div key={index} className="relative w-20 h-20 rounded bg-[#0a0a0a] overflow-hidden border border-black/20">
@@ -232,7 +234,7 @@ export default function AddSideSheet(props: AddSideSheetProps) {
                 className="w-full cursor-pointer py-2 rounded bg-[#0a0a0a] text-white font-semibold border border-black hover:border-white transition-colors"
                 onClick={handleSave}
               >
-                Save
+                {t("item.save")}
               </button>
             </div>
           </div>

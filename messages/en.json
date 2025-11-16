@@ -1,0 +1,25 @@
+{
+  "Catalogs": {
+    "title": "Catalogs",
+    "placeholder": "Search items",
+    "loading_products": "Loading products...",
+    "no_items": "No items in the catalog. Please add items to see them here.",
+    "no_items_found": "No items found matching",
+    "item": {
+      "close_sidebar": "Close",
+      "add_item": "Add Item",
+      "edit_item": "Edit Item",
+      "name": "Name",
+      "description": "Description",
+      "retail_price": "Retail Price",
+      "bulk_price": "Bulk Price",
+      "quantity": "Stock quantity",
+      "threshold": "threshold",
+      "minimum_order": "Minimum order",
+      "unit": "Unit",
+      "images": "Images",
+      "save": "Save",
+      "delete": "Delete"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalSidebar from "@/components/Sidebar/ConditionalSidebar";
 import AuthGuard from "@/components/AuthGuard/AuthGuard";
+import { NextIntlClientProvider } from "next-intl";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex overflow-x-hidden`}
       >
         <AuthGuard>
-          <ConditionalSidebar />
-          <main className="flex-1 overflow-auto">
-            {children}
-          </main>
+          <NextIntlClientProvider>
+            <ConditionalSidebar />
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </NextIntlClientProvider>
         </AuthGuard>
       </body>
     </html>

@@ -2,7 +2,11 @@
 import React from "react";
 import { useCatalogStore } from "@/lib/catalog-store";
 
-const SearchInput = () => {
+type SearchInputProps = {
+  placeholder?: string;
+};
+
+const SearchInput = ({ placeholder }: SearchInputProps) => {
   const searchTerm = useCatalogStore((state) => state.searchTerm);
   const setSearchTerm = useCatalogStore((state) => state.setSearchTerm);
 
@@ -17,7 +21,7 @@ const SearchInput = () => {
       type="text"
       name="search"
       id="search"
-      placeholder="Search items"
+      placeholder={placeholder || "Search items"}
       className="bg-[#1a1a1a] px-3 py-2 rounded-md outline-none w-96"
     />
   )
