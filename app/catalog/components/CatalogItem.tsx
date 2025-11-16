@@ -8,8 +8,8 @@ type CatalogItemProps = {
 const CatalogItem = ({ item }: CatalogItemProps) => {
   const t = useTranslations("Catalogs");
   return (
-    <div className="rounded-lg bg-[#1a1a1a] mb-4 flex flex-col w-fit cursor-pointer flex-1">
-      {item.picture_url ? (
+    <div className="rounded-lg bg-[#1a1a1a] border border-[#333333] mb-4 flex flex-col w-fit cursor-pointer flex-1">
+      {item.picture_url && item.picture_url.length > 0 ? (
         <img src={item.picture_url[0]} alt={item.name} className="w-full h-48 object-cover rounded-t-lg" />
       ) : (
         <div className="w-full h-48 bg-[#0a0a0a] rounded-t-lg flex items-center justify-center text-gray-500">
