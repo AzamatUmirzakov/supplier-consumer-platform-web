@@ -1,70 +1,225 @@
 import { create } from "zustand";
+import { API_BASE } from "./constants";
+import { useAuthStore } from "./useAuthStore";
 
 export type CatalogItem = {
-  category: string;
-  description: string;
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  preview: string;
+  product_id?: string,
+  name: string,
+  description: string,
+  picture_url: string[],
+  stock_quantity: number,
+  retail_price: number,
+  threshold: number,
+  bulk_price: number,
+  minimum_order: number,
+  unit: string,
 };
-
-
 
 type CatalogStore = {
   items: CatalogItem[];
   currentItemId: string | null;
   searchTerm: string;
+  loading: boolean;
+  error: string | null;
   setCurrentItemId: (id: string | null) => void;
   setSearchTerm: (term: string) => void;
-  addItem: (item: CatalogItem) => void;
-  updateItem: (item: CatalogItem) => void;
-  deleteItem: (id: string) => void;
+  fetchItems: () => Promise<void>;
+  addItem: (item: {
+    item: Omit<CatalogItem, 'picture_url'>
+    pictures: File[],
+  }) => Promise<void>;
+  updateItem: (item: {
+    item: Omit<CatalogItem, 'picture_url'>,
+    pictures: File[],
+  }) => Promise<void>;
+  deleteItem: (id: string) => Promise<void>;
 };
 
-const initialItems: CatalogItem[] = [
-  {
-    id: "1",
-    name: "Oranges",
-    category: "Fruits",
-    description: "Fresh oranges",
-    price: 999,
-    quantity: 10,
-    preview: "https://plus.unsplash.com/premium_photo-1675237625695-710b9a6c3f2e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-  },
-  {
-    id: "2",
-    name: "Apples",
-    category: "Fruits",
-    description: "Crisp apples",
-    price: 799,
-    quantity: 15,
-    preview: "https://plus.unsplash.com/premium_photo-1674262321087-bfcd8135fdc5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=627",
-  },
-  {
-    id: "3",
-    name: "Bananas",
-    category: "Fruits",
-    description: "Ripe bananas",
-    price: 499,
-    quantity: 20,
-    preview: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=627",
-  },
-];
-
-export const useCatalogStore = create<CatalogStore>((set) => ({
-  items: initialItems,
+export const useCatalogStore = create<CatalogStore>((set, get) => ({
+  items: [],
   currentItemId: null,
   searchTerm: "",
+  loading: false,
+  error: null,
+
   setCurrentItemId: (id) => set({ currentItemId: id }),
   setSearchTerm: (term) => set({ searchTerm: term }),
-  addItem: (item) => set((state) => ({ items: [...state.items, item] })),
-  updateItem: (updated) =>
-    set((state) => ({
-      items: state.items.map((it) => (it.id === updated.id ? updated : it)),
-    })),
-  deleteItem: (id) =>
-    set((state) => ({ items: state.items.filter((it) => it.id !== id) })),
+
+  fetchItems: async () => {
+    set({ loading: true, error: null });
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      const response = await fetch(`${API_BASE}/products/`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch products: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const products = Array.isArray(data.products) ? data.products : [];
+
+      set({ items: products, loading: false });
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
+  addItem: async (data) => {
+    set({ loading: true, error: null });
+    try {
+      // upload pictures
+      const picture_urls: string[] = [];
+      try {
+        for (const file of data.pictures) {
+          // Step 1: Get the S3 URLs
+          const fileExtension = file.name.split(".").pop() || "jpg";
+          const uploadUrlResponse = await fetch(
+            `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
+            {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
+              },
+            }
+          );
+
+          if (!uploadUrlResponse.ok) {
+            let errorMessage = "Failed to get upload URL";
+            try {
+              const errorData = await uploadUrlResponse.json();
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+              errorMessage = `Server error: ${uploadUrlResponse.status} ${uploadUrlResponse.statusText}`;
+            }
+            throw new Error(errorMessage);
+          }
+
+          const uploadUrlData = await uploadUrlResponse.json();
+          console.log("Upload URL response:", uploadUrlData);
+
+          // const s3PresignedUrl = uploadUrlData.finalurl;
+          const s3PresignedUrl = uploadUrlData.put_url.url;
+          if (!s3PresignedUrl) {
+            throw new Error("No presigned URL received from server");
+          }
+
+          // Step 2: Upload the file to S3
+          const { url, fields } = uploadUrlData.put_url;
+          const formData = new FormData();
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+          });
+          formData.append("file", file);
+          console.log("Uploading file to S3 with fields:", fields);
+
+          const uploadResponse = await fetch(s3PresignedUrl, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload to S3: ${uploadResponse.status} ${uploadResponse.statusText}`);
+          }
+
+          console.log("File uploaded successfully to S3");
+
+          picture_urls.push(uploadUrlData.finalurl);
+        }
+
+      } catch (error: any) {
+        const errorMessage = error instanceof TypeError
+          ? "Failed to connect to server for file upload"
+          : error.message;
+        set({ error: errorMessage });
+        throw error;
+      }
+
+      // create product
+
+      const accessToken = useAuthStore.getState().accessToken;
+      const response = await fetch(`${API_BASE}/products/`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data.item,
+          picture_url: picture_urls,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to add product: ${response.status}`);
+      }
+
+      // Refetch all items to sync with server
+      await get().fetchItems();
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
+  updateItem: async (updated) => {
+    set({ loading: true, error: null });
+    try {
+      console.log(updated);
+      const accessToken = useAuthStore.getState().accessToken;
+      const response = await fetch(`${API_BASE}/products/${updated.item.product_id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...updated.item,
+          picture_url: updated.pictures,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to update product: ${response.status}`);
+      }
+
+      // Refetch all items to sync with server
+      await get().fetchItems();
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
+  deleteItem: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      const response = await fetch(`${API_BASE}/products/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to delete product: ${response.status}`);
+      }
+
+      // Refetch all items to sync with server
+      await get().fetchItems();
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
 }));
 
