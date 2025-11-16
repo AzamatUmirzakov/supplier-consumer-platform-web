@@ -50,7 +50,8 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_BASE}/products/`, {
+      const company_id = useAuthStore.getState().user?.company_id;
+      const response = await fetch(`${API_BASE}/products/?company_id=${company_id}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
