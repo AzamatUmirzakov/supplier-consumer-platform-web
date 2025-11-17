@@ -257,10 +257,11 @@ export const useAuthStore = create<AuthStore>()(
 
       updateUser: async (data) => {
         set({ loading: true, error: null });
+        const id = useAuthStore.getState().user?.user_id;
         try {
           const accessToken = useAuthStore.getState().accessToken;
-          const response = await fetch(`${API_BASE}/user/me`, {
-            method: "PATCH",
+          const response = await fetch(`${API_BASE}/user/${id}`, {
+            method: "PUT",
             headers: {
               "Authorization": `Bearer ${accessToken}`,
               "Content-Type": "application/json",
@@ -280,7 +281,7 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const updatedUser = await response.json();
-          set({ user: updatedUser, loading: false });
+          set({ user: updatedUser.user, loading: false });
         } catch (error: any) {
           set({ error: error.message, loading: false });
           throw error;
