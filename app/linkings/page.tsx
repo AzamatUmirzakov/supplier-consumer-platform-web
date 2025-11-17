@@ -1,16 +1,79 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLinkingsStore, Linking, LinkingStatus } from "@/lib/linkings-store";
+import { useCitiesStore } from "@/lib/cities-store";
+import { API_BASE } from "@/lib/constants";
+import useAuthStore from "@/lib/useAuthStore";
+import LinkingCard from "./components/LinkingCard";
 
 type TabType = "pending" | "active";
+
+type CompanyDetails = {
+  company_id: number;
+  name: string;
+  description: string;
+  logo_url?: string;
+  location: string;
+  company_type: "supplier" | "consumer";
+  status: string;
+};
 
 function LinkingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("pending");
   const { linkings, loading, fetchLinkings, updateLinking } = useLinkingsStore();
+  const cities = useCitiesStore((state) => state.cities);
+  const fetchCities = useCitiesStore((state) => state.fetchCities);
+  const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
-    fetchLinkings(); // Uncomment when backend is ready
-  }, [fetchLinkings]);
+    fetchLinkings();
+    fetchCities();
+  }, [fetchLinkings, fetchCities]);
+
+  // Helper function to get city name by ID
+  const getCityName = (cityId: string | number) => {
+    const city = cities.find((c) => c.city_id === Number(cityId));
+    return city ? city.city_name : `City #${cityId}`;
+  };
+
+  // Fetch company details for a specific company ID
+  const fetchCompanyDetails = async (companyId: number) => {
+    if (companiesDetails.has(companyId)) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/company/get-company?company_id=${companyId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data: CompanyDetails = await response.json();
+        setCompaniesDetails((prev) => new Map(prev).set(companyId, data));
+      }
+    } catch (error) {
+      console.error(`Failed to fetch company ${companyId}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    // Collect all unique company IDs
+    const companyIds = new Set<number>();
+    linkings.forEach((linking) => {
+      companyIds.add(linking.consumer_company_id);
+      companyIds.add(linking.supplier_company_id);
+    });
+
+    // Fetch details for each company
+    companyIds.forEach((id) => {
+      fetchCompanyDetails(id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkings, accessToken]);
 
   const pendingLinkings = linkings.filter((linking) => linking.status === LinkingStatus.pending);
   const activeLinkings = linkings.filter((linking) => linking.status === LinkingStatus.accepted);
@@ -60,7 +123,7 @@ function LinkingsPage() {
           <button
             onClick={() => setActiveTab("active")}
             className={`cursor-pointer px-4 py-2 border-b-2 font-medium transition-colors ${activeTab === "active"
-              ? "border-white border-black text-white"
+              ? "border-white text-white"
               : "text-gray-500 hover:text-gray-300 border-transparent"
               }`}
           >
@@ -85,44 +148,15 @@ function LinkingsPage() {
             </div>
           ) : (
             pendingLinkings.map((linking) => (
-              <div
+              <LinkingCard
                 key={linking.linking_id}
-                className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 flex items-center justify-between hover:border-gray-500 transition-colors"
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-white">
-                    {linking.consumer_company_name || `Company #${linking.consumer_company_id}`}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Wants to link with: {linking.supplier_company_name || `Company #${linking.supplier_company_id}`}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Requested by: {linking.requested_by_user_name || `User #${linking.requested_by_user_id}`}
-                  </p>
-                  {linking.message && (
-                    <p className="text-sm text-gray-300 mt-2 italic">"{linking.message}"</p>
-                  )}
-                  {linking.created_at && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Requested: {new Date(linking.created_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAccept(linking.linking_id)}
-                    className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => handleReject(linking.linking_id)}
-                    className="cursor-pointer px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
-                  >
-                    Reject
-                  </button>
-                </div>
-              </div>
+                linking={linking}
+                companyDetails={companiesDetails.get(linking.consumer_company_id)}
+                getCityName={getCityName}
+                type="pending"
+                onAccept={handleAccept}
+                onReject={handleReject}
+              />
             ))
           )}
         </div>
@@ -137,32 +171,14 @@ function LinkingsPage() {
             </div>
           ) : (
             activeLinkings.map((linking) => (
-              <div
+              <LinkingCard
                 key={linking.linking_id}
-                className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 flex items-center justify-between hover:border-gray-500 transition-colors"
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-white">
-                    {linking.company1_name || linking.company1_id}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Linked with: {linking.company2_name || linking.company2_id}
-                  </p>
-                  {linking.updated_at && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Active since: {new Date(linking.updated_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleStop(linking.linking_id)}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
-                  >
-                    Stop
-                  </button>
-                </div>
-              </div>
+                linking={linking}
+                companyDetails={companiesDetails.get(linking.consumer_company_id)}
+                getCityName={getCityName}
+                type="active"
+                onStop={handleStop}
+              />
             ))
           )}
         </div>

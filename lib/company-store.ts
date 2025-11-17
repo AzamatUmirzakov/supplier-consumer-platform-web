@@ -48,9 +48,9 @@ export const useCompanyStore = create<CompanyStore>()(
       }
     },
 
-    getCompanyDetails: async () => {
+    getCompanyDetails: async (id?: number) => {
       const token = useAuthStore.getState().accessToken;
-      const company_id = useAuthStore.getState().user?.company_id;
+      const company_id = id ?? useAuthStore.getState().user?.company_id;
       if (!company_id) {
         set({ error: "No company ID found", loading: false });
         return;
