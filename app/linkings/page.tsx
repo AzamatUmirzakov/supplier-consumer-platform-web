@@ -13,7 +13,7 @@ function LinkingsPage() {
   }, [fetchLinkings]);
 
   const pendingLinkings = linkings.filter((linking) => linking.status === LinkingStatus.pending);
-  const activeLinkings = linkings.filter((linking) => linking.status === LinkingStatus.active);
+  const activeLinkings = linkings.filter((linking) => linking.status === LinkingStatus.accepted);
 
   const handleAccept = async (linkingId: number) => {
     try {

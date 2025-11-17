@@ -4,8 +4,9 @@ import { useAuthStore } from "./useAuthStore";
 
 export enum LinkingStatus {
   pending = "pending",
-  active = "active",
-  rejected = "rejected"
+  accepted = "accepted",
+  rejected = "rejected",
+  unlinked = "unlinked",
 }
 
 export type Linking = {
