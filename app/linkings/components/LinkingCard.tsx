@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface CompanyDetails {
   company_id: number;
   name: string;
@@ -39,6 +41,7 @@ export default function LinkingCard({
   onReject,
   onStop,
 }: LinkingCardProps) {
+  const t = useTranslations("Linkings");
   return (
     <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 hover:border-gray-500 transition-colors">
       <div className="flex items-start gap-4">
@@ -72,7 +75,7 @@ export default function LinkingCard({
 
           {type === "active" && linking.updated_at && (
             <p className="text-xs text-gray-500">
-              Active since: {new Date(linking.updated_at).toLocaleDateString()}
+              {t("active_since")} {new Date(linking.updated_at).toLocaleDateString()}
             </p>
           )}
         </div>
@@ -84,13 +87,13 @@ export default function LinkingCard({
                 onClick={() => onAccept?.(linking.linking_id)}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium"
               >
-                Accept
+                {t("accept")}
               </button>
               <button
                 onClick={() => onReject?.(linking.linking_id)}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
               >
-                Reject
+                {t("reject")}
               </button>
             </>
           )}
@@ -99,7 +102,7 @@ export default function LinkingCard({
               onClick={() => onStop?.(linking.linking_id)}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
             >
-              Stop
+              {t("stop")}
             </button>
           )}
         </div>

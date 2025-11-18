@@ -5,6 +5,7 @@ import { useCitiesStore } from "@/lib/cities-store";
 import { API_BASE } from "@/lib/constants";
 import useAuthStore from "@/lib/useAuthStore";
 import LinkingCard from "./components/LinkingCard";
+import { useTranslations } from "next-intl";
 
 type TabType = "pending" | "active";
 
@@ -25,6 +26,8 @@ function LinkingsPage() {
   const fetchCities = useCitiesStore((state) => state.fetchCities);
   const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
   const accessToken = useAuthStore((state) => state.accessToken);
+
+  const t = useTranslations("Linkings");
 
   useEffect(() => {
     fetchLinkings();
@@ -56,7 +59,7 @@ function LinkingsPage() {
         setCompaniesDetails((prev) => new Map(prev).set(companyId, data));
       }
     } catch (error) {
-      console.error(`Failed to fetch company ${companyId}:`, error);
+      console.error(`${t("failed_fetch_company")} ${companyId}:`, error);
     }
   };
 
@@ -82,31 +85,31 @@ function LinkingsPage() {
     try {
       await updateLinking(linkingId, "accepted");
     } catch (error: any) {
-      alert(`Failed to accept: ${error.message}`);
+      alert(`${t("failed_accept")}: ${error.message}`);
     }
   };
 
   const handleReject = async (linkingId: number) => {
-    if (!confirm("Are you sure you want to reject this linking?")) return;
+    if (!confirm(t("sure_reject"))) return;
     try {
       await updateLinking(linkingId, "rejected");
     } catch (error: any) {
-      alert(`Failed to reject: ${error.message}`);
+      alert(`${t("failed_reject")}: ${error.message}`);
     }
   };
 
   const handleStop = async (linkingId: number) => {
-    if (!confirm("Are you sure you want to stop this linking?")) return;
+    if (!confirm(t("sure_stop"))) return;
     try {
       await updateLinking(linkingId, "unlinked");
     } catch (error: any) {
-      alert(`Failed to stop: ${error.message}`);
+      alert(`${t("failed_stop")}: ${error.message}`);
     }
   };
 
   return (
     <div className="py-5 px-10 flex-1">
-      <h1 className="text-4xl font-bold mb-6">Linkings</h1>
+      <h1 className="text-4xl font-bold mb-6">{t("title")}</h1>
 
       {/* Tabs */}
       <div className="border-b border-gray-300 mb-6">
@@ -118,7 +121,7 @@ function LinkingsPage() {
               : "text-gray-500 hover:text-gray-300 border-transparent"
               }`}
           >
-            Pending ({pendingLinkings.length})
+            {t("pending")} ({pendingLinkings.length})
           </button>
           <button
             onClick={() => setActiveTab("active")}
@@ -127,7 +130,7 @@ function LinkingsPage() {
               : "text-gray-500 hover:text-gray-300 border-transparent"
               }`}
           >
-            Active ({activeLinkings.length})
+            {t("active")} ({activeLinkings.length})
           </button>
         </div>
       </div>
@@ -135,7 +138,7 @@ function LinkingsPage() {
       {/* Loading State */}
       {loading && (
         <div className="text-gray-400 text-center mt-20">
-          Loading linkings...
+          {t("loading")}
         </div>
       )}
 
@@ -144,7 +147,7 @@ function LinkingsPage() {
         <div className="space-y-4">
           {pendingLinkings.length === 0 ? (
             <div className="text-gray-400 text-center mt-20">
-              No pending linkings
+              {t("no_pending")}
             </div>
           ) : (
             pendingLinkings.map((linking) => (
@@ -167,7 +170,7 @@ function LinkingsPage() {
         <div className="space-y-4">
           {activeLinkings.length === 0 ? (
             <div className="text-gray-400 text-center mt-20">
-              No active linkings
+              {t("no_active")}
             </div>
           ) : (
             activeLinkings.map((linking) => (

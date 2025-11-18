@@ -30,5 +30,23 @@
     "complaints": "Complaints",
     "profile": "Profile",
     "company": "Company"
+  },
+  "Linkings": {
+    "title": "Linkings",
+    "loading": "Loading linkings...",
+    "pending": "Pending",
+    "active": "Active",
+    "no_pending": "No pending link requests",
+    "no_active": "No active links",
+    "stop": "Stop",
+    "active_since": "Active since",
+    "accept": "Accept",
+    "reject": "Reject",
+    "sure_reject": "Are you sure you want to reject this linking request?",
+    "sure_stop": "Are you sure you want to stop this linking?",
+    "failed_accept": "Failed to accept linking request.",
+    "failed_reject": "Failed to reject linking request.",
+    "failed_stop": "Failed to stop linking.",
+    "failed_fetch_company": "Failed to fetch company information."
   }
 }
