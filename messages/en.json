@@ -27,6 +27,8 @@
     "catalogs": "Catalogs",
     "linkings": "Linkings",
     "orders": "Orders",
-    "complaints": "Complaints"
+    "complaints": "Complaints",
+    "profile": "Profile",
+    "company": "Company"
   }
 }

@@ -27,6 +27,8 @@
     "catalogs": "Каталоги",
     "linkings": "Связи",
     "orders": "Заказы",
-    "complaints": "Жалобы"
+    "complaints": "Жалобы",
+    "profile": "Профиль",
+    "company": "Компания"
   }
 }

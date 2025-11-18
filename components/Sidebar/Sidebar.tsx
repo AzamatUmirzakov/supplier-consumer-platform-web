@@ -73,14 +73,14 @@ const Sidebar = () => {
               className="block px-4 py-2 hover:bg-[#3a3a3a] transition-colors"
               onClick={() => setShowMenu(false)}
             >
-              Profile
+              {t("profile")}
             </Link>
             <Link
               href="/company"
               className="block px-4 py-2 hover:bg-[#3a3a3a] transition-colors"
               onClick={() => setShowMenu(false)}
             >
-              Company
+              {t("company")}
             </Link>
           </div>
         )}
