@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { useOrdersStore, Order } from "@/lib/orders-store";
+import { useTranslations } from "next-intl";
 
 type GroupedOrder = {
   order_id: number;
@@ -15,6 +16,8 @@ function OrdersPage() {
   const orders = useOrdersStore((state) => state.orders);
   const fetchOrders = useOrdersStore((state) => state.fetchOrders);
   const changeOrderStatus = useOrdersStore((state) => state.changeOrderStatus);
+
+  const t = useTranslations("Orders");
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
@@ -77,8 +80,8 @@ function OrdersPage() {
       {/* Left Sidebar - Orders List */}
       <div className="w-80 bg-[#1a1a1a] border-r border-[#2a2a2a] flex flex-col overflow-hidden">
         <div className="p-4 border-b border-[#2a2a2a]">
-          <h2 className="text-xl font-bold text-white">Orders</h2>
-          <p className="text-sm text-gray-400 mt-1">{groupedOrders.length} total orders</p>
+          <h2 className="text-xl font-bold text-white">{t("title")}</h2>
+          <p className="text-sm text-gray-400 mt-1">{groupedOrders.length} {t("total_orders")}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -98,7 +101,7 @@ function OrdersPage() {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <p>No orders found</p>
+                <p>{t("no_orders_found")}</p>
               </div>
             </div>
           ) : (
@@ -113,15 +116,15 @@ function OrdersPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-white">
-                    Order #{order.order_id}
+                    {t("order")} #{order.order_id}
                   </h3>
                   <span className={`${getStatusColor(order.status)} text-white text-xs px-2 py-1 rounded capitalize`}>
-                    {order.status}
+                    {t(`status.${order.status}`)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-400">
-                  <span>{order.items.length} items</span>
-                  <span className="font-semibold text-white">${order.total_price.toFixed(2)}</span>
+                  <span>{order.items.length} {t("items")}</span>
+                  <span className="font-semibold text-white">{order.total_price.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {formatDate(order.created_at)}
@@ -140,7 +143,7 @@ function OrdersPage() {
             <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] p-6">
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-2xl font-bold text-white">
-                  Order #{selectedOrder.order_id}
+                  {t("order")} #{selectedOrder.order_id}
                 </h1>
                 {/* change status */}
                 <select
@@ -148,16 +151,16 @@ function OrdersPage() {
                   onChange={(e) => changeOrderStatus(selectedOrder.order_id, e.target.value as Order["order_status"])}
                   className={`${getStatusColor(selectedOrder.status)} text-white text-sm px-3 py-1.5 rounded-lg capitalize font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
-                  <option value="created">Created</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipping">Shipping</option>
-                  <option value="completed">Completed</option>
+                  <option value="created">{t("status.created")}</option>
+                  <option value="processing">{t("status.processing")}</option>
+                  <option value="shipping">{t("status.shipping")}</option>
+                  <option value="completed">{t("status.completed")}</option>
                 </select>
               </div>
               <div className="flex gap-4 text-sm text-gray-400">
-                <span>{selectedOrder.items.length} items</span>
+                <span>{selectedOrder.items.length} {t("items")}</span>
                 <span>•</span>
-                <span>Total: ${selectedOrder.total_price.toFixed(2)}</span>
+                <span>{t("total")}: {selectedOrder.total_price.toFixed(2)}</span>
                 <span>•</span>
                 <span>{formatDate(selectedOrder.created_at)}</span>
               </div>
@@ -209,27 +212,27 @@ function OrdersPage() {
 
                       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         <div>
-                          <span className="text-gray-400">Quantity:</span>
+                          <span className="text-gray-400">{t("info.quantity")}:</span>
                           <span className="text-white ml-2 font-semibold">
                             {item.quantity} {item.unit}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-400">Unit Price:</span>
+                          <span className="text-gray-400">{t("info.unit_price")}:</span>
                           <span className="text-white ml-2 font-semibold">
-                            ${item.price.toFixed(2)}
+                            {item.price.toFixed(2)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-400">Product ID:</span>
+                          <span className="text-gray-400">{t("info.id")}:</span>
                           <span className="text-white ml-2">
                             #{item.product_id}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-400">Item Total:</span>
+                          <span className="text-gray-400">{t("info.item_total")}:</span>
                           <span className="text-white ml-2 font-semibold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {(item.price * item.quantity).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -240,22 +243,22 @@ function OrdersPage() {
 
               {/* Order Summary */}
               <div className="mt-6 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Order Summary</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{t("summary.order_summary")}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-lg mb-2">
-                    <span className="text-white font-semibold">Total:</span>
+                    <span className="text-white font-semibold">{t("total")}:</span>
                     <span className="text-white font-bold">
-                      ${selectedOrder.total_price.toFixed(2)}
+                      {selectedOrder.total_price.toFixed(2)}
                     </span>
                   </div>
                   <div className="border-t border-[#2a2a2a] pt-3 mt-3">
                     <div className="text-sm text-gray-400">
                       <div className="flex justify-between mb-1">
-                        <span>Created:</span>
+                        <span>{t("summary.created")}:</span>
                         <span className="text-gray-300">{formatDate(selectedOrder.created_at)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Last Updated:</span>
+                        <span>{t("summary.last_updated")}:</span>
                         <span className="text-gray-300">{formatDate(selectedOrder.updated_at)}</span>
                       </div>
                     </div>
@@ -280,7 +283,7 @@ function OrdersPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p className="text-lg">Select an order to view details</p>
+              <p className="text-lg">{t("select_order_to_view_details")}</p>
             </div>
           </div>
         )}

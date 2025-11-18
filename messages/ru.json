@@ -48,5 +48,31 @@
     "failed_reject": "Не удалось отклонить запрос на связь.",
     "failed_stop": "Не удалось остановить связь.",
     "failed_fetch_company": "Не удалось получить информацию о компании."
+  },
+  "Orders": {
+    "title": "Заказы",
+    "total_orders": "всего заказов",
+    "no_orders_found": "Заказы не найдены.",
+    "order": "Заказ",
+    "items": "товаров",
+    "total": "Итого",
+    "select_order_to_view_details": "Выберите заказ, чтобы просмотреть детали",
+    "status": {
+      "created": "Создан",
+      "processing": "В обработке",
+      "shipping": "Отправлен",
+      "completed": "Доставлен"
+    },
+    "info": {
+      "quantity": "Количество",
+      "unit_price": "Цена за единицу",
+      "item_total": "Итого по товару",
+      "id": "ID товара"
+    },
+    "summary": {
+      "order_summary": "Сводка заказа",
+      "created": "Создан",
+      "last_updated": "Последнее обновление"
+    }
   }
 }

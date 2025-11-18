@@ -48,5 +48,31 @@
     "failed_reject": "Failed to reject linking request.",
     "failed_stop": "Failed to stop linking.",
     "failed_fetch_company": "Failed to fetch company information."
+  },
+  "Orders": {
+    "title": "Orders",
+    "total_orders": "total orders",
+    "no_orders_found": "No orders found.",
+    "order": "Order",
+    "items": "items",
+    "total": "Total",
+    "select_order_to_view_details": "Select an order to view details",
+    "status": {
+      "created": "Created",
+      "processing": "Processing",
+      "shipping": "Shipping",
+      "completed": "Completed"
+    },
+    "info": {
+      "quantity": "Quantity",
+      "unit_price": "Unit Price",
+      "item_total": "Item Total",
+      "id": "Product ID"
+    },
+    "summary": {
+      "order_summary": "Order Summary",
+      "created": "Created",
+      "last_updated": "Last Updated"
+    }
   }
 }
