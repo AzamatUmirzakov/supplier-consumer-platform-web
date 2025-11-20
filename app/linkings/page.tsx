@@ -1,66 +1,37 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useLinkingsStore, Linking, LinkingStatus } from "@/lib/linkings-store";
+import { useLinkingsStore, LinkingStatus, fetchCompanyDetails, CompanyDetails } from "@/lib/linkings-store";
 import { useCitiesStore } from "@/lib/cities-store";
-import { API_BASE } from "@/lib/constants";
-import useAuthStore from "@/lib/useAuthStore";
+import { useCompanyStore } from "@/lib/company-store";
 import LinkingCard from "./components/LinkingCard";
 import { useTranslations } from "next-intl";
 
 type TabType = "pending" | "active";
-
-type CompanyDetails = {
-  company_id: number;
-  name: string;
-  description: string;
-  logo_url?: string;
-  location: string;
-  company_type: "supplier" | "consumer";
-  status: string;
-};
 
 function LinkingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("pending");
   const { linkings, loading, fetchLinkings, updateLinking } = useLinkingsStore();
   const cities = useCitiesStore((state) => state.cities);
   const fetchCities = useCitiesStore((state) => state.fetchCities);
+  const myCompany = useCompanyStore((state) => state.company);
+  const getCompanyDetails = useCompanyStore((state) => state.getCompanyDetails);
   const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
-  const accessToken = useAuthStore((state) => state.accessToken);
 
   const t = useTranslations("Linkings");
+
+  // Determine if we're a supplier or consumer
+  const isSupplier = myCompany.company_type === "supplier";
 
   useEffect(() => {
     fetchLinkings();
     fetchCities();
-  }, [fetchLinkings, fetchCities]);
+    getCompanyDetails(); // Fetch our own company details
+  }, [fetchLinkings, fetchCities, getCompanyDetails]);
 
   // Helper function to get city name by ID
   const getCityName = (cityId: string | number) => {
     const city = cities.find((c) => c.city_id === Number(cityId));
     return city ? city.city_name : `City #${cityId}`;
-  };
-
-  // Fetch company details for a specific company ID
-  const fetchCompanyDetails = async (companyId: number) => {
-    if (companiesDetails.has(companyId)) return;
-
-    try {
-      const response = await fetch(`${API_BASE}/company/get-company?company_id=${companyId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data: CompanyDetails = await response.json();
-        setCompaniesDetails((prev) => new Map(prev).set(companyId, data));
-      }
-    } catch (error) {
-      console.error(`${t("failed_fetch_company")} ${companyId}:`, error);
-    }
   };
 
   useEffect(() => {
@@ -72,11 +43,16 @@ function LinkingsPage() {
     });
 
     // Fetch details for each company
-    companyIds.forEach((id) => {
-      fetchCompanyDetails(id);
+    companyIds.forEach(async (id) => {
+      if (!companiesDetails.has(id)) {
+        const data = await fetchCompanyDetails(id);
+        if (data) {
+          setCompaniesDetails((prev) => new Map(prev).set(id, data));
+        }
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [linkings, accessToken]);
+  }, [linkings]);
 
   const pendingLinkings = linkings.filter((linking) => linking.status === LinkingStatus.pending);
   const activeLinkings = linkings.filter((linking) => linking.status === LinkingStatus.accepted);
@@ -150,17 +126,23 @@ function LinkingsPage() {
               {t("no_pending")}
             </div>
           ) : (
-            pendingLinkings.map((linking) => (
-              <LinkingCard
-                key={linking.linking_id}
-                linking={linking}
-                companyDetails={companiesDetails.get(linking.consumer_company_id)}
-                getCityName={getCityName}
-                type="pending"
-                onAccept={handleAccept}
-                onReject={handleReject}
-              />
-            ))
+            pendingLinkings.map((linking) => {
+              // If we're a supplier, show consumer company. If we're a consumer, show supplier company.
+              const otherCompanyId = isSupplier
+                ? linking.consumer_company_id
+                : linking.supplier_company_id;
+              return (
+                <LinkingCard
+                  key={linking.linking_id}
+                  linking={linking}
+                  companyDetails={companiesDetails.get(otherCompanyId)}
+                  getCityName={getCityName}
+                  type="pending"
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                />
+              );
+            })
           )}
         </div>
       )}
@@ -173,16 +155,22 @@ function LinkingsPage() {
               {t("no_active")}
             </div>
           ) : (
-            activeLinkings.map((linking) => (
-              <LinkingCard
-                key={linking.linking_id}
-                linking={linking}
-                companyDetails={companiesDetails.get(linking.consumer_company_id)}
-                getCityName={getCityName}
-                type="active"
-                onStop={handleStop}
-              />
-            ))
+            activeLinkings.map((linking) => {
+              // If we're a supplier, show consumer company. If we're a consumer, show supplier company.
+              const otherCompanyId = isSupplier
+                ? linking.consumer_company_id
+                : linking.supplier_company_id;
+              return (
+                <LinkingCard
+                  key={linking.linking_id}
+                  linking={linking}
+                  companyDetails={companiesDetails.get(otherCompanyId)}
+                  getCityName={getCityName}
+                  type="active"
+                  onStop={handleStop}
+                />
+              );
+            })
           )}
         </div>
       )}

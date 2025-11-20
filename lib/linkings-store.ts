@@ -28,6 +28,40 @@ export type Linking = {
   assigned_salesman_name?: string;
 };
 
+export type CompanyDetails = {
+  company_id: number;
+  name: string;
+  description: string;
+  logo_url?: string;
+  location: string;
+  company_type: "supplier" | "consumer";
+  status: string;
+};
+
+// Standalone function to fetch company details
+export const fetchCompanyDetails = async (companyId: number): Promise<CompanyDetails | null> => {
+  const accessToken = useAuthStore.getState().accessToken;
+  try {
+    const response = await fetch(`${API_BASE}/company/get-company?company_id=${companyId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data: CompanyDetails = await response.json();
+      return data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch company details:", error);
+    return null;
+  }
+};
+
 type LinkingsStore = {
   linkings: Linking[];
   loading: boolean;
@@ -35,82 +69,6 @@ type LinkingsStore = {
   fetchLinkings: () => Promise<void>;
   updateLinking: (linkingId: number, status: "pending" | "accepted" | "rejected" | "unlinked") => Promise<void>;
 };
-
-// Stub data for testing
-// const testInitialLinkings: Linking[] = [
-//   {
-//     linking_id: 1,
-//     consumer_company_id: 101,
-//     supplier_company_id: 102,
-//     requested_by_user_id: 1,
-//     status: LinkingStatus.pending,
-//     message: "Would like to establish a partnership for office supplies",
-//     created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-//     updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-//     consumer_company_name: "Tech Solutions Inc.",
-//     supplier_company_name: "Global Supplies Co.",
-//     requested_by_user_name: "John Smith"
-//   },
-//   {
-//     linking_id: 2,
-//     consumer_company_id: 103,
-//     supplier_company_id: 101,
-//     requested_by_user_id: 5,
-//     status: LinkingStatus.pending,
-//     message: "Interested in bulk hardware purchases",
-//     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-//     updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-//     consumer_company_name: "BuildIt Construction",
-//     supplier_company_name: "Tech Solutions Inc.",
-//     requested_by_user_name: "Sarah Johnson"
-//   },
-//   {
-//     linking_id: 3,
-//     consumer_company_id: 101,
-//     supplier_company_id: 104,
-//     requested_by_user_id: 1,
-//     responded_by_user_id: 8,
-//     assigned_salesman_user_id: 9,
-//     status: LinkingStatus.active,
-//     message: "Partnership for electronic components",
-//     created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-//     updated_at: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-//     consumer_company_name: "Tech Solutions Inc.",
-//     supplier_company_name: "Electronics Warehouse",
-//     requested_by_user_name: "John Smith",
-//     responded_by_user_name: "Mike Davis",
-//     assigned_salesman_name: "Tom Anderson"
-//   },
-//   {
-//     linking_id: 4,
-//     consumer_company_id: 105,
-//     supplier_company_id: 101,
-//     requested_by_user_id: 12,
-//     responded_by_user_id: 1,
-//     assigned_salesman_user_id: 2,
-//     status: LinkingStatus.active,
-//     message: "Long-term partnership for office equipment",
-//     created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-//     updated_at: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000).toISOString(),
-//     consumer_company_name: "Metro Services LLC",
-//     supplier_company_name: "Tech Solutions Inc.",
-//     requested_by_user_name: "Emily Brown",
-//     responded_by_user_name: "John Smith",
-//     assigned_salesman_name: "Alex Wilson"
-//   },
-//   {
-//     linking_id: 5,
-//     consumer_company_id: 106,
-//     supplier_company_id: 101,
-//     requested_by_user_id: 15,
-//     status: LinkingStatus.pending,
-//     created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-//     updated_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-//     consumer_company_name: "StartUp Innovations",
-//     supplier_company_name: "Tech Solutions Inc.",
-//     requested_by_user_name: "David Lee"
-//   }
-// ];
 
 export const useLinkingsStore = create<LinkingsStore>((set, get) => ({
   linkings: [],
