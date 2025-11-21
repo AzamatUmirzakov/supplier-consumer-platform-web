@@ -95,14 +95,17 @@ function ChatPage() {
 
   // Load messages when a chat is selected
   useEffect(() => {
+    console.log("Chat load effect triggered, selectedLinkingId:", selectedLinkingId);
     if (!selectedLinkingId) {
       setMessages([]);
       return;
     }
 
+    console.log("Calling fetchChatMessages for linking:", selectedLinkingId);
     setIsLoadingMessages(true);
     fetchChatMessages(selectedLinkingId)
       .then((data) => {
+        console.log("Received chat data:", data);
         if (data) {
           setMessages(data.messages);
         }

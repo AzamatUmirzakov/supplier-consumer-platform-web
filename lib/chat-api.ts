@@ -41,6 +41,7 @@ export const fetchChatMessages = async (
 ): Promise<ChatMessage | null> => {
   const accessToken = useAuthStore.getState().accessToken;
 
+  console.log("fetching messages for linkingId:", linkingId, "limit:", limit, "offset:", offset);
   try {
     const response = await fetch(
       `${API_BASE}/chat/messages/${linkingId}?limit=${limit}&offset=${offset}`,
