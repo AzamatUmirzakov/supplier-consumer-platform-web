@@ -2,6 +2,7 @@ import { API_BASE } from "./constants";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import useAuthStore from "./useAuthStore";
+import { apiFetch } from "./api-fetch";
 
 export type Order = {
   order_id: number;
@@ -27,12 +28,9 @@ export const useOrdersStore = create<{
     (set, get) => ({
       orders: [],
       fetchOrders: async () => {
-        const accessToken = useAuthStore.getState().accessToken;
         try {
-          const response = await fetch(`${API_BASE}/orders`, {
-            headers: {
-              "Authorization": `Bearer ${accessToken}`,
-            },
+          const response = await apiFetch(`${API_BASE}/orders`, {
+            headers: {},
           });
           if (!response.ok) {
             throw new Error(`Error fetching orders: ${response.statusText}`);
@@ -44,12 +42,10 @@ export const useOrdersStore = create<{
         }
       },
       changeOrderStatus: async (orderId: number, status: Order["order_status"]) => {
-        const accessToken = useAuthStore.getState().accessToken;
         try {
-          const response = await fetch(`${API_BASE}/orders/${orderId}/status?status=${status}`, {
+          const response = await apiFetch(`${API_BASE}/orders/${orderId}/status?status=${status}`, {
             method: "PATCH",
             headers: {
-              "Authorization": `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
           });

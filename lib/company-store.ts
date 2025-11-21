@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { API_BASE, CompanyStore } from "./constants";
 import useAuthStore from "./useAuthStore";
+import { apiFetch } from "./api-fetch";
 
 export const useCompanyStore = create<CompanyStore>()(
   (set) => ({
@@ -18,14 +19,12 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     fetchUsers: async () => {
-      const token = useAuthStore.getState().accessToken;
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/user`, {
+        const response = await apiFetch(`${API_BASE}/user`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
         });
@@ -49,7 +48,6 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     getCompanyDetails: async (id?: number) => {
-      const token = useAuthStore.getState().accessToken;
       const company_id = id ?? useAuthStore.getState().user?.company_id;
       if (!company_id) {
         set({ error: "No company ID found", loading: false });
@@ -57,11 +55,10 @@ export const useCompanyStore = create<CompanyStore>()(
       }
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/company/get-company?company_id=${company_id}`, {
+        const response = await apiFetch(`${API_BASE}/company/get-company?company_id=${company_id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
         });
@@ -85,14 +82,12 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     addUser: async (userData) => {
-      const token = useAuthStore.getState().accessToken;
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/user/`, {
+        const response = await apiFetch(`${API_BASE}/user/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
           body: JSON.stringify({
@@ -122,14 +117,12 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     updateUser: async (userId, userData) => {
-      const token = useAuthStore.getState().accessToken;
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/user/${userId}`, {
+        const response = await apiFetch(`${API_BASE}/user/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
           body: JSON.stringify(userData),
@@ -156,14 +149,12 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     deleteUser: async (userId) => {
-      const token = useAuthStore.getState().accessToken;
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/user/${userId}`, {
+        const response = await apiFetch(`${API_BASE}/user/${userId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
         });
@@ -189,15 +180,13 @@ export const useCompanyStore = create<CompanyStore>()(
     },
 
     updateCompany: async (companyData) => {
-      const token = useAuthStore.getState().accessToken;
       const company_id = useAuthStore.getState().user?.company_id;
       set({ loading: true, error: null });
       try {
-        const response = await fetch(`${API_BASE}/company/${company_id}`, {
+        const response = await apiFetch(`${API_BASE}/company/${company_id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           credentials: "include",
           body: JSON.stringify(companyData),

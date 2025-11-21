@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { API_BASE } from "./constants";
 import { useAuthStore } from "./useAuthStore";
+import { apiFetch } from "./api-fetch";
 
 export type CatalogItem = {
   product_id?: string,
@@ -49,13 +50,10 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
   fetchItems: async () => {
     set({ loading: true, error: null });
     try {
-      const accessToken = useAuthStore.getState().accessToken;
       const company_id = useAuthStore.getState().user?.company_id;
-      const response = await fetch(`${API_BASE}/products/?company_id=${company_id}`, {
+      const response = await apiFetch(`${API_BASE}/products/?company_id=${company_id}`, {
         method: "GET",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
+        headers: {},
       });
 
       if (!response.ok) {
@@ -81,13 +79,11 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
         for (const file of data.pictures) {
           // Step 1: Get the S3 URLs
           const fileExtension = file.name.split(".").pop() || "jpg";
-          const uploadUrlResponse = await fetch(
+          const uploadUrlResponse = await apiFetch(
             `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
             {
               method: "GET",
-              headers: {
-                "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
-              },
+              headers: {},
             }
           );
 
@@ -144,11 +140,9 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
 
       // create product
 
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_BASE}/products/`, {
+      const response = await apiFetch(`${API_BASE}/products/`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -174,7 +168,6 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       console.log(updated);
-      const accessToken = useAuthStore.getState().accessToken;
 
       // Process images: upload Files to S3, keep existing URLs as-is
       const picture_urls: string[] = [];
@@ -189,13 +182,11 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
           const fileExtension = file.name.split(".").pop() || "jpg";
 
           // Get presigned URL
-          const uploadUrlResponse = await fetch(
+          const uploadUrlResponse = await apiFetch(
             `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
             {
               method: "GET",
-              headers: {
-                "Authorization": `Bearer ${accessToken}`,
-              },
+              headers: {},
             }
           );
 
@@ -242,13 +233,11 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
       // delete removed pictures from server
       for (const url of updated.picturesToRemove) {
         try {
-          const deleteResponse = await fetch(
+          const deleteResponse = await apiFetch(
             `${API_BASE}/uploads/delete-file?file_url=${encodeURIComponent(url)}`,
             {
               method: "DELETE",
-              headers: {
-                "Authorization": `Bearer ${accessToken}`,
-              },
+              headers: {},
             }
           );
 
@@ -270,10 +259,9 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
       }
 
       // Update product with processed URLs
-      const response = await fetch(`${API_BASE}/products/${updated.item.product_id}`, {
+      const response = await apiFetch(`${API_BASE}/products/${updated.item.product_id}`, {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -298,12 +286,9 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
   deleteItem: async (id) => {
     set({ loading: true, error: null });
     try {
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_BASE}/products/${id}`, {
+      const response = await apiFetch(`${API_BASE}/products/${id}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
+        headers: {},
       });
 
       if (!response.ok) {

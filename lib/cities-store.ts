@@ -1,6 +1,7 @@
 import { API_BASE } from "./constants";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { apiFetch } from "./api-fetch";
 
 export type City = {
   city_id: number;
@@ -25,7 +26,7 @@ export const useCitiesStore = create<CitiesStore>()(
             return;
           }
 
-          const response = await fetch(`${API_BASE}/cities/get-all-cities`);
+          const response = await apiFetch(`${API_BASE}/cities/get-all-cities`);
           if (!response.ok) {
             throw new Error(`Error fetching cities: ${response.statusText}`);
           }

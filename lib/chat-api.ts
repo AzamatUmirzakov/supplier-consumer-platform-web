@@ -1,5 +1,6 @@
 import { API_BASE } from "./constants";
 import { useAuthStore } from "./useAuthStore";
+import { apiFetch } from "./api-fetch";
 
 export type MessageType = "text" | "image" | "file";
 
@@ -39,17 +40,14 @@ export const fetchChatMessages = async (
   limit: number = 100,
   offset: number = 0
 ): Promise<ChatMessage | null> => {
-  const accessToken = useAuthStore.getState().accessToken;
-
   console.log("fetching messages for linkingId:", linkingId, "limit:", limit, "offset:", offset);
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE}/chat/messages/${linkingId}?limit=${limit}&offset=${offset}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
         credentials: "include",
       }

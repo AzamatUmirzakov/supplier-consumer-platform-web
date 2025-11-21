@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { API_BASE } from "./constants";
 import { useAuthStore } from "./useAuthStore";
+import { apiFetch } from "./api-fetch";
 
 export enum LinkingStatus {
   pending = "pending",
@@ -40,13 +41,11 @@ export type CompanyDetails = {
 
 // Standalone function to fetch company details
 export const fetchCompanyDetails = async (companyId: number): Promise<CompanyDetails | null> => {
-  const accessToken = useAuthStore.getState().accessToken;
   try {
-    const response = await fetch(`${API_BASE}/company/get-company?company_id=${companyId}`, {
+    const response = await apiFetch(`${API_BASE}/company/get-company?company_id=${companyId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`
       },
       credentials: "include",
     });
@@ -83,12 +82,9 @@ export const useLinkingsStore = create<LinkingsStore>((set, get) => ({
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
       set({ linkings: [], loading: false });
 
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_BASE}/linkings/`, {
+      const response = await apiFetch(`${API_BASE}/linkings/`, {
         method: "GET",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
+        headers: {},
       });
 
       if (!response.ok) {
@@ -108,12 +104,9 @@ export const useLinkingsStore = create<LinkingsStore>((set, get) => ({
   updateLinking: async (linkingId, status) => {
     set({ loading: true, error: null });
     try {
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_BASE}/linkings/supplier_response/${linkingId}?status=${status}`, {
+      const response = await apiFetch(`${API_BASE}/linkings/supplier_response/${linkingId}?status=${status}`, {
         method: "PATCH",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
+        headers: {},
       });
 
       if (!response.ok) {

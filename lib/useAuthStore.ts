@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { API_BASE } from "./constants";
 import { AuthStore } from "@/lib/constants";
+import { apiFetch } from "./api-fetch";
 
 
 export const useAuthStore = create<AuthStore>()(
@@ -171,13 +172,11 @@ export const useAuthStore = create<AuthStore>()(
           for (const file of files) {
             // Step 1: Get the presigned S3 URL
             const fileExtension = file.name.split(".").pop() || "jpg";
-            const uploadUrlResponse = await fetch(
+            const uploadUrlResponse = await apiFetch(
               `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
               {
                 method: "GET",
-                headers: {
-                  "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
-                },
+                headers: {},
               }
             );
 
@@ -228,13 +227,11 @@ export const useAuthStore = create<AuthStore>()(
             const company_id = useAuthStore.getState().user?.company_id;
             console.log(company_id)
             const fileUrl = uploadUrlData.finalurl;
-            const urlUploadResponse = await fetch(
+            const urlUploadResponse = await apiFetch(
               `${API_BASE}/uploads/companies/${company_id}/photo?file_url=${encodeURIComponent(fileUrl)}`,
               {
                 method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${useAuthStore.getState().accessToken}`,
-                },
+                headers: {},
               });
 
             if (!urlUploadResponse.ok) {
@@ -259,11 +256,9 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true, error: null });
         const id = useAuthStore.getState().user?.user_id;
         try {
-          const accessToken = useAuthStore.getState().accessToken;
-          const response = await fetch(`${API_BASE}/user/${id}`, {
+          const response = await apiFetch(`${API_BASE}/user/${id}`, {
             method: "PUT",
             headers: {
-              "Authorization": `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
