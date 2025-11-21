@@ -63,7 +63,8 @@
       "created": "Created",
       "processing": "Processing",
       "shipping": "Shipping",
-      "completed": "Completed"
+      "completed": "Completed",
+      "rejected": "Rejected"
     },
     "info": {
       "quantity": "Quantity",

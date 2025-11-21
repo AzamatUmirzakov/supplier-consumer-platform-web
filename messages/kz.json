@@ -63,7 +63,8 @@
       "created": "Жасалды",
       "processing": "Өңделуде",
       "shipping": "Жөнелтілді",
-      "completed": "Жеткізілді"
+      "completed": "Жеткізілді",
+      "rejected": "Бас тартылды"
     },
     "info": {
       "quantity": "Саны",

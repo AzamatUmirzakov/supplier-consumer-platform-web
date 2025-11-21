@@ -60,6 +60,8 @@ function OrdersPage() {
         return "bg-blue-600";
       case "completed":
         return "bg-green-600";
+      case "rejected":
+        return "bg-red-600";
       default:
         return "bg-gray-600";
     }
@@ -155,6 +157,7 @@ function OrdersPage() {
                   <option value="processing">{t("status.processing")}</option>
                   <option value="shipping">{t("status.shipping")}</option>
                   <option value="completed">{t("status.completed")}</option>
+                  <option value="rejected">{t("status.rejected")}</option>
                 </select>
               </div>
               <div className="flex gap-4 text-sm text-gray-400">

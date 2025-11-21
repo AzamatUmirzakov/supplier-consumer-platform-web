@@ -63,7 +63,8 @@
       "created": "Создан",
       "processing": "В обработке",
       "shipping": "Отправлен",
-      "completed": "Доставлен"
+      "completed": "Доставлен",
+      "rejected": "Отклонен"
     },
     "info": {
       "quantity": "Количество",

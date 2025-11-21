@@ -13,7 +13,7 @@ export type Order = {
   quantity: number,
   price: number,
   unit: string,
-  order_status: "created" | "processing" | "shipping" | "completed";
+  order_status: "created" | "processing" | "shipping" | "completed" | "rejected";
   order_total_price: number;
   order_created_at: string;
   order_updated_at: string;
