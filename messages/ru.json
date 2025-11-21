@@ -29,7 +29,8 @@
     "orders": "Заказы",
     "complaints": "Жалобы",
     "profile": "Профиль",
-    "company": "Компания"
+    "company": "Компания",
+    "logout": "Выйти"
   },
   "Linkings": {
     "title": "Связи",

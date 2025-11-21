@@ -29,7 +29,8 @@
     "orders": "Тапсырыстар",
     "complaints": "Шағымдар",
     "profile": "Профиль",
-    "company": "Компания"
+    "company": "Компания",
+    "logout": "Шығу"
   },
   "Linkings": {
     "title": "Байланыстар",

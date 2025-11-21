@@ -11,6 +11,7 @@ const Sidebar = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   const pages = [
     { name: t("dashboard"), path: '/' },
@@ -82,6 +83,15 @@ const Sidebar = () => {
             >
               {t("company")}
             </Link>
+            <button
+              onClick={() => {
+                logout();
+                setShowMenu(false);
+              }}
+              className="cursor-pointer block w-full text-left px-4 py-2 hover:bg-[#3a3a3a] transition-colors text-red-400 hover:text-red-300 border-t border-[#2a2a2a]"
+            >
+              {t("logout")}
+            </button>
           </div>
         )}
       </div>

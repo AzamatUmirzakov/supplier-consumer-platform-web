@@ -29,7 +29,8 @@
     "orders": "Orders",
     "complaints": "Complaints",
     "profile": "Profile",
-    "company": "Company"
+    "company": "Company",
+    "logout": "Logout"
   },
   "Linkings": {
     "title": "Linkings",

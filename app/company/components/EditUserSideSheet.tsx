@@ -232,9 +232,8 @@ export default function EditUserSideSheet(props: EditUserSideSheetProps) {
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className="bg-[#0a0a0a] px-2 py-2 rounded text-white border border-black/20 focus:border-white transition-colors"
               >
-                <option value="employee">Employee</option>
+                <option value="staff">Staff</option>
                 <option value="manager">Manager</option>
-                <option value="salesman">Salesman</option>
                 <option value="owner">Owner</option>
               </select>
             </div>
