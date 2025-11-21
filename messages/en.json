@@ -30,7 +30,8 @@
     "complaints": "Complaints",
     "profile": "Profile",
     "company": "Company",
-    "logout": "Logout"
+    "logout": "Logout",
+    "language": "Language"
   },
   "Linkings": {
     "title": "Linkings",

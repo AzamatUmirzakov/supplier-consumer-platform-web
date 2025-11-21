@@ -13,6 +13,14 @@ const Sidebar = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
+  const [localeMenuOpen, setLocaleMenuOpen] = useState(false);
+  const availableLocales = [
+    { code: "ru", label: "RU" },
+    { code: "en", label: "EN" },
+    { code: "kz", label: "KZ" },
+  ];
+  const currentLocale = typeof window !== "undefined" ? localStorage.getItem("NEXT_LOCALE") || "en" : "en";
+
   const pages = [
     { name: t("dashboard"), path: '/' },
     { name: t("catalogs"), path: '/catalog' },
@@ -83,12 +91,38 @@ const Sidebar = () => {
             >
               {t("company")}
             </Link>
+            <div className="px-4 py-2 border-t border-[#2a2a2a]">
+              <div className="mb-2 text-sm text-gray-400">{t("language")}</div>
+              <div className="flex gap-2">
+                {availableLocales.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      try {
+                        localStorage.setItem("NEXT_LOCALE", l.code);
+                        // Also set cookie for server-side rendering
+                        document.cookie = `NEXT_LOCALE=${l.code}; path=/; max-age=${60 * 60 * 24 * 365}`;
+                      } catch (e) {
+                        console.error("Failed to set locale:", e);
+                      }
+                      // small delay to ensure storage write
+                      setTimeout(() => window.location.reload(), 50);
+                    }}
+                    className={`cursor-pointer px-3 py-1 rounded text-sm font-medium transition-colors ${currentLocale === l.code ? "bg-gray-200 text-black" : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                      }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               onClick={() => {
                 logout();
                 setShowMenu(false);
               }}
-              className="cursor-pointer block w-full text-left px-4 py-2 hover:bg-[#3a3a3a] transition-colors text-red-400 hover:text-red-300 border-t border-[#2a2a2a]"
+              className="cursor-pointer block w-full text-left px-4 py-2 hover:bg-[#3a3a3a] transition-colors text-red-400 hover:text-red-300"
             >
               {t("logout")}
             </button>
