@@ -197,7 +197,7 @@ function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#0a0a0a]">
+    <div className="flex h-screen bg-[#0a0a0a]">
       {/* Chats Sidebar */}
       <div className="w-80 bg-[#1a1a1a] border-r border-gray-800 flex flex-col">
         {/* Sidebar Header */}
