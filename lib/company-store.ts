@@ -126,7 +126,7 @@ export const useCompanyStore = create<CompanyStore>()(
       set({ loading: true, error: null });
       try {
         const response = await fetch(`${API_BASE}/user/${userId}`, {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
@@ -182,6 +182,41 @@ export const useCompanyStore = create<CompanyStore>()(
         // Refetch users to update the list
         const state = useCompanyStore.getState();
         await state.fetchUsers();
+      } catch (error: any) {
+        set({ error: error.message, loading: false });
+        throw error;
+      }
+    },
+
+    updateCompany: async (companyData) => {
+      const token = useAuthStore.getState().accessToken;
+      const company_id = useAuthStore.getState().user?.company_id;
+      set({ loading: true, error: null });
+      try {
+        const response = await fetch(`${API_BASE}/company/${company_id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          credentials: "include",
+          body: JSON.stringify(companyData),
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Failed to update company";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Refetch company details to update the state
+        const state = useCompanyStore.getState();
+        await state.getCompanyDetails();
       } catch (error: any) {
         set({ error: error.message, loading: false });
         throw error;

@@ -84,4 +84,10 @@ export type CompanyStore = {
     role: string;
   }) => Promise<void>;
   deleteUser: (userId: number) => Promise<void>;
+  updateCompany: (companyData: {
+    name?: string;
+    description?: string;
+    location?: string;
+    status?: string;
+  }) => Promise<void>;
 };
