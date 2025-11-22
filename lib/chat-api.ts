@@ -110,14 +110,18 @@ export const createChatWebSocket = (
   };
 
   ws.onerror = (error) => {
-    console.error("WebSocket error:", error);
+    // WebSocket errors are typically connection issues, don't log empty objects
+    // The actual error details will be in the close event
     if (onError) {
       onError(error);
     }
   };
 
   ws.onclose = (event) => {
-    console.log("WebSocket closed:", event.code, event.reason);
+    // Only log non-normal closures
+    if (event.code !== 1000 && event.code !== 1001) {
+      console.log("WebSocket closed unexpectedly:", event.code, event.reason);
+    }
     if (onClose) {
       onClose(event);
     }
@@ -209,14 +213,18 @@ export const createOrderChatWebSocket = (
   };
 
   ws.onerror = (error) => {
-    console.error("WebSocket error:", error);
+    // WebSocket errors are typically connection issues, don't log empty objects
+    // The actual error details will be in the close event
     if (onError) {
       onError(error);
     }
   };
 
   ws.onclose = (event) => {
-    console.log("WebSocket closed:", event.code, event.reason);
+    // Only log non-normal closures
+    if (event.code !== 1000 && event.code !== 1001) {
+      console.log("Order WebSocket closed unexpectedly:", event.code, event.reason);
+    }
     if (onClose) {
       onClose(event);
     }

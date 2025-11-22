@@ -34,8 +34,11 @@ function ChatPage() {
     getCompanyDetails(); // Fetch our own company details
   }, [fetchLinkings, getCompanyDetails]);
 
-  // Get active linkings (accepted status)
-  const activeLinkings = linkings.filter((l) => l.status === LinkingStatus.accepted);
+  // Get active linkings (accepted status) where current user participates
+  const activeLinkings = linkings.filter((l) =>
+    l.status === LinkingStatus.accepted &&
+    l.responded_by_user_id === user?.user_id
+  );
 
   useEffect(() => {
     activeLinkings.forEach(async (linking) => {
@@ -115,7 +118,12 @@ function ChatPage() {
         }
       })
       .catch((error) => {
-        console.error("Failed to load messages:", error);
+        // If 403, user doesn't have permission - silently fail
+        if (error.status === 403 || error.message?.includes('403')) {
+          console.log("No permission to view this chat");
+        } else {
+          console.error("Failed to load messages:", error);
+        }
       })
       .finally(() => {
         setIsLoadingMessages(false);
@@ -235,7 +243,7 @@ function ChatPage() {
         <div className="flex-1 overflow-y-auto">
           {chatCompanies.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              {searchQuery ? "No companies found" : "No linked companies"}
+              {searchQuery ? "No chats found" : "No chats"}
             </div>
           ) : (
             chatCompanies.map((company) => (

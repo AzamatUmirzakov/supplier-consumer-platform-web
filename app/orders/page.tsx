@@ -95,26 +95,35 @@ function OrdersPage() {
     const loadMessages = async () => {
       setIsLoadingMessages(true);
       console.log("Calling fetchOrderChatMessages with orderId:", selectedOrderId);
-      const data = await fetchOrderChatMessages(selectedOrderId);
-      console.log("Received order chat data:", data);
-      if (data && data.messages) {
-        // Parse event_data for order and complaint (status_change) messages
-        const parsedMessages = data.messages.map((msg) => {
-          if (msg.type === "order" || msg.type === "complaint") {
-            try {
-              return { ...msg, event_data: JSON.parse(msg.body) };
-            } catch (e) {
-              console.error("Failed to parse event_data:", e);
-              return msg;
+      try {
+        const data = await fetchOrderChatMessages(selectedOrderId);
+        console.log("Received order chat data:", data);
+        if (data && data.messages) {
+          // Parse event_data for order and complaint (status_change) messages
+          const parsedMessages = data.messages.map((msg) => {
+            if (msg.type === "order" || msg.type === "complaint") {
+              try {
+                return { ...msg, event_data: JSON.parse(msg.body) };
+              } catch (e) {
+                console.error("Failed to parse event_data:", e);
+                return msg;
+              }
             }
-          }
-          return msg;
-        });
-        // Sort messages by timestamp to ensure chronological order
-        const sortedMessages = parsedMessages.sort((a, b) =>
-          new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
-        );
-        setMessages(sortedMessages);
+            return msg;
+          });
+          // Sort messages by timestamp to ensure chronological order
+          const sortedMessages = parsedMessages.sort((a, b) =>
+            new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+          );
+          setMessages(sortedMessages);
+        }
+      } catch (error: any) {
+        // If 403, user doesn't have permission - silently fail
+        if (error.status === 403 || error.message?.includes('403')) {
+          console.log("No permission to view this order chat");
+        } else {
+          console.error("Failed to load order messages:", error);
+        }
       }
       setIsLoadingMessages(false);
     };
