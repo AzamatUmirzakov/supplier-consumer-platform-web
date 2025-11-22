@@ -27,6 +27,7 @@ const Sidebar = () => {
     { name: t("linkings"), path: '/linkings' },
     { name: t("orders"), path: '/orders' },
     { name: t("complaints"), path: '/complaints' },
+    { name: t("chats"), path: '/chat' },
   ];
 
   const pathname = usePathname();

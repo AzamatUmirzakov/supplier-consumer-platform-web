@@ -31,7 +31,8 @@
     "profile": "Profile",
     "company": "Company",
     "logout": "Logout",
-    "language": "Language"
+    "language": "Language",
+    "chats": "Chats"
   },
   "Linkings": {
     "title": "Linkings",
