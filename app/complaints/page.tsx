@@ -28,6 +28,10 @@ function ComplaintsPage() {
 
   const [activeTab, setActiveTab] = useState<"assigned" | "managed" | "escalated" | "company">("assigned");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showResolveModal, setShowResolveModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [resolveData, setResolveData] = useState({ resolution_notes: "", cancel_order: false });
+  const [closeData, setCloseData] = useState({ resolution_notes: "", cancel_order: false });
 
   // Determine user role
   const userRole = user?.role || "staff";
@@ -93,16 +97,22 @@ function ComplaintsPage() {
     }
   };
 
-  const handleResolve = async (complaintId: number) => {
-    await resolveComplaint(complaintId);
+  const handleResolve = async () => {
+    if (!selectedId) return;
+    await resolveComplaint(selectedId, resolveData);
+    setShowResolveModal(false);
+    setResolveData({ resolution_notes: "", cancel_order: false });
     if (selectedId) {
       fetchComplaintDetails(selectedId);
       fetchComplaintHistory(selectedId);
     }
   };
 
-  const handleClose = async (complaintId: number) => {
-    await closeComplaint(complaintId);
+  const handleClose = async () => {
+    if (!selectedId) return;
+    await closeComplaint(selectedId, closeData);
+    setShowCloseModal(false);
+    setCloseData({ resolution_notes: "", cancel_order: false });
     if (selectedId) {
       fetchComplaintDetails(selectedId);
       fetchComplaintHistory(selectedId);
@@ -345,7 +355,7 @@ function ComplaintsPage() {
                       {/* Manager/Owner can resolve */}
                       {(isManager || isOwner) && storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
                         <button
-                          onClick={() => handleResolve(storeSelectedComplaint.complaint_id)}
+                          onClick={() => setShowResolveModal(true)}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
                         >
                           Resolve
@@ -355,7 +365,7 @@ function ComplaintsPage() {
                       {/* Manager/Owner can close */}
                       {(isManager || isOwner) && storeSelectedComplaint.status !== "closed" && (
                         <button
-                          onClick={() => handleClose(storeSelectedComplaint.complaint_id)}
+                          onClick={() => setShowCloseModal(true)}
                           className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
                         >
                           Close
@@ -419,6 +429,110 @@ function ComplaintsPage() {
           </div>
         )}
       </div>
+
+      {/* Resolve Modal */}
+      {showResolveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-white mb-4">Resolve Complaint</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Resolution Notes
+                </label>
+                <textarea
+                  value={resolveData.resolution_notes}
+                  onChange={(e) => setResolveData({ ...resolveData, resolution_notes: e.target.value })}
+                  placeholder="Describe how the issue was resolved..."
+                  className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="resolve-cancel-order"
+                  checked={resolveData.cancel_order}
+                  onChange={(e) => setResolveData({ ...resolveData, cancel_order: e.target.checked })}
+                  className="w-4 h-4 bg-[#2a2a2a] border-gray-700 rounded cursor-pointer"
+                />
+                <label htmlFor="resolve-cancel-order" className="text-sm text-gray-300 cursor-pointer">
+                  Cancel associated order (set status to rejected)
+                </label>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleResolve}
+                  disabled={!resolveData.resolution_notes.trim()}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Resolve
+                </button>
+                <button
+                  onClick={() => {
+                    setShowResolveModal(false);
+                    setResolveData({ resolution_notes: "", cancel_order: false });
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Close Modal */}
+      {showCloseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-white mb-4">Close Complaint</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Resolution Notes
+                </label>
+                <textarea
+                  value={closeData.resolution_notes}
+                  onChange={(e) => setCloseData({ ...closeData, resolution_notes: e.target.value })}
+                  placeholder="Explain why the complaint is being closed..."
+                  className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="close-cancel-order"
+                  checked={closeData.cancel_order}
+                  onChange={(e) => setCloseData({ ...closeData, cancel_order: e.target.checked })}
+                  className="w-4 h-4 bg-[#2a2a2a] border-gray-700 rounded cursor-pointer"
+                />
+                <label htmlFor="close-cancel-order" className="text-sm text-gray-300 cursor-pointer">
+                  Cancel associated order (set status to rejected)
+                </label>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleClose}
+                  disabled={!closeData.resolution_notes.trim()}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCloseModal(false);
+                    setCloseData({ resolution_notes: "", cancel_order: false });
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Toast */}
       {error && (

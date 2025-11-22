@@ -51,8 +51,8 @@ type ComplaintsStore = {
   createComplaint: (orderId: number, description: string) => Promise<void>;
   escalateComplaint: (complaintId: number) => Promise<void>;
   claimComplaint: (complaintId: number) => Promise<void>;
-  resolveComplaint: (complaintId: number) => Promise<void>;
-  closeComplaint: (complaintId: number) => Promise<void>;
+  resolveComplaint: (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => Promise<void>;
+  closeComplaint: (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => Promise<void>;
 
   setSelectedComplaint: (complaint: Complaint | null) => void;
   clearError: () => void;
@@ -268,12 +268,15 @@ export const useComplaintsStore = create<ComplaintsStore>((set, get) => ({
     }
   },
 
-  resolveComplaint: async (complaintId: number) => {
+  resolveComplaint: async (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => {
     set({ loading: true, error: null });
     try {
       const response = await apiFetch(`${API_BASE}/complaints/${complaintId}/resolve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          data
+        ),
       });
 
       if (!response.ok) {
@@ -289,12 +292,15 @@ export const useComplaintsStore = create<ComplaintsStore>((set, get) => ({
     }
   },
 
-  closeComplaint: async (complaintId: number) => {
+  closeComplaint: async (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => {
     set({ loading: true, error: null });
     try {
       const response = await apiFetch(`${API_BASE}/complaints/${complaintId}/close`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          data
+        ),
       });
 
       if (!response.ok) {
