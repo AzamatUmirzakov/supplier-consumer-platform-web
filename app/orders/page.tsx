@@ -60,9 +60,9 @@ function OrdersPage() {
       const data = await fetchOrderChatMessages(selectedOrderId);
       console.log("Received order chat data:", data);
       if (data && data.messages) {
-        // Parse event_data for order (status_change) messages
+        // Parse event_data for order and complaint (status_change) messages
         const parsedMessages = data.messages.map((msg) => {
-          if (msg.type === "order") {
+          if (msg.type === "order" || msg.type === "complaint") {
             try {
               return { ...msg, event_data: JSON.parse(msg.body) };
             } catch (e) {
@@ -98,8 +98,8 @@ function OrdersPage() {
             sent_at: message.sent_at,
           };
 
-          // Parse event_data if it's an order (status_change) message
-          if (newMessage.type === "order") {
+          // Parse event_data if it's an order or complaint (status_change) message
+          if (newMessage.type === "order" || newMessage.type === "complaint") {
             try {
               newMessage.event_data = JSON.parse(newMessage.body);
             } catch (e) {
@@ -167,7 +167,20 @@ function OrdersPage() {
   };
 
   const formatStatusChange = (event: any) => {
-    if (!event) return "Status updated";
+    const complaintDictionary = {
+      "open": "open",
+      "escalated": "escalated",
+      "in_progress": "in progress",
+      "resolved": "resolved",
+      "closed": "rejected",
+    };
+
+    if (event.entity === "complaint") {
+      if (event.old_status == null) {
+        return `Complaint was created`;
+      }
+      return `Complaint status updated from "${complaintDictionary[event.old_status]}" to "${complaintDictionary[event.new_status]}"`;
+    }
 
     const entity = event.entity || "item";
     const oldStatus = event.old_status || "";
@@ -490,8 +503,8 @@ function OrdersPage() {
                     </div>
                   ) : (
                     messages.map((message) => {
-                      // Order status change messages are displayed as announcements
-                      if (message.type === "order") {
+                      // Order and complaint status change messages are displayed as announcements
+                      if (message.type === "order" || message.type === "complaint") {
                         return (
                           <div key={message.message_id} className="flex justify-center my-4">
                             <div className="max-w-lg px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
