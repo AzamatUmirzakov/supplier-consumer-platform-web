@@ -105,5 +105,73 @@
         "order_status_changed": "Статус заказа #{id} изменен с \"{oldStatus}\" на \"{newStatus}\""
       }
     }
+  },
+  "Complaints": {
+    "title": "Жалобы",
+    "tabs": {
+      "assigned": "Назначенные мне",
+      "managed": "Управляемые мной",
+      "escalated": "Эскалированные",
+      "company": "Вся компания"
+    },
+    "loading": "Загрузка...",
+    "no_complaints": "Жалобы не найдены",
+    "complaint": "Жалоба",
+    "order": "Заказ",
+    "details": {
+      "title": "Детали",
+      "complaint": "Жалоба:",
+      "no_text": "Текст жалобы отсутствует",
+      "created_by": "Создано:",
+      "assigned_to": "Назначено:",
+      "claimed_by": "Принято:"
+    },
+    "actions": {
+      "title": "Действия",
+      "escalate": "Эскалировать менеджеру",
+      "claim": "Принять жалобу",
+      "resolve": "Решить",
+      "close": "Закрыть"
+    },
+    "history": {
+      "title": "История",
+      "no_history": "История отсутствует",
+      "status_changed": "Статус изменен на:",
+      "changed_by": "Изменено пользователем #{user_id}"
+    },
+    "modals": {
+      "escalate": {
+        "title": "Эскалировать менеджеру",
+        "notes": "Примечания",
+        "notes_placeholder": "Добавьте примечания о причине эскалации...",
+        "cancel": "Отмена",
+        "submit": "Эскалировать"
+      },
+      "resolve": {
+        "title": "Решить жалобу",
+        "notes": "Примечания по решению",
+        "notes_placeholder": "Опишите, как была решена жалоба...",
+        "cancel_order": "Отменить заказ",
+        "cancel": "Отмена",
+        "submit": "Решить"
+      },
+      "close": {
+        "title": "Закрыть жалобу",
+        "notes": "Примечания по закрытию",
+        "notes_placeholder": "Объясните, почему жалоба закрывается...",
+        "cancel_order": "Отменить заказ",
+        "cancel": "Отмена",
+        "submit": "Закрыть"
+      }
+    },
+    "status": {
+      "open": "Открыта",
+      "in_progress": "В процессе",
+      "escalated": "Эскалирована",
+      "resolved": "Решена",
+      "closed": "Закрыта"
+    },
+    "select_complaint": "Выберите жалобу для просмотра деталей",
+    "loading_details": "Загрузка деталей..."
   }
 }

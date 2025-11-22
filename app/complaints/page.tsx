@@ -2,8 +2,10 @@
 import { useState, useEffect } from "react";
 import { useComplaintsStore, Complaint, ComplaintHistory } from "@/lib/complaints-store";
 import useAuthStore from "@/lib/useAuthStore";
+import { useTranslations } from "next-intl";
 
 function ComplaintsPage() {
+  const t = useTranslations("Complaints");
   const user = useAuthStore((state) => state.user);
   const {
     complaints,
@@ -158,7 +160,7 @@ function ComplaintsPage() {
       {/* Left Sidebar - Complaints List */}
       <div className="w-80 bg-[#1a1a1a] border-r border-[#2a2a2a] flex flex-col overflow-hidden">
         <div className="p-4 border-b border-[#2a2a2a]">
-          <h2 className="text-xl font-bold text-white mb-3">Complaints</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t("title")}</h2>
 
           {/* Tabs */}
           <div className="flex flex-col gap-2">
@@ -170,7 +172,7 @@ function ComplaintsPage() {
                   : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
                   }`}
               >
-                Assigned to Me
+                {t("tabs.assigned")}
               </button>
             )}
             {(isManager || isOwner) && (
@@ -182,7 +184,7 @@ function ComplaintsPage() {
                     : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
                     }`}
                 >
-                  My Managed
+                  {t("tabs.managed")}
                 </button>
                 <button
                   onClick={() => handleTabChange("escalated")}
@@ -191,7 +193,7 @@ function ComplaintsPage() {
                     : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
                     }`}
                 >
-                  Escalated
+                  {t("tabs.escalated")}
                 </button>
               </>
             )}
@@ -203,7 +205,7 @@ function ComplaintsPage() {
                   : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
                   }`}
               >
-                All Company
+                {t("tabs.company")}
               </button>
             )}
           </div>
@@ -246,21 +248,21 @@ function ComplaintsPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-white">
-                    Complaint #{complaint.complaint_id}
+                    {t("complaint")} #{complaint.complaint_id}
                   </h3>
                   <span
                     className={`${getStatusColor(
                       complaint.status
                     )} text-white text-xs px-2 py-1 rounded capitalize`}
                   >
-                    {complaint.status.replace("_", " ")}
+                    {t(`status.${complaint.status}`)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-400 line-clamp-2 mb-2">
                   {complaint.description}
                 </p>
                 <div className="text-xs text-gray-500">
-                  <div>Order #{complaint.order_id}</div>
+                  <div>{t("order")} #{complaint.order_id}</div>
                   <div>{formatDate(complaint.created_at)}</div>
                 </div>
               </div>
@@ -277,7 +279,7 @@ function ComplaintsPage() {
             <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] p-6">
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-2xl font-bold text-white">
-                  Complaint #{storeSelectedComplaint.complaint_id}
+                  {t("complaint")} #{storeSelectedComplaint.complaint_id}
                 </h1>
                 {storeSelectedComplaint.status && (
                   <span
@@ -285,12 +287,12 @@ function ComplaintsPage() {
                       storeSelectedComplaint.status
                     )} text-white text-sm px-3 py-1.5 rounded capitalize`}
                   >
-                    {storeSelectedComplaint.status.replace("_", " ")}
+                    {t(`status.${storeSelectedComplaint.status}`)}
                   </span>
                 )}
               </div>
               <div className="flex gap-4 text-sm text-gray-400">
-                <span>Order #{storeSelectedComplaint.order_id}</span>
+                <span>{t("order")} #{storeSelectedComplaint.order_id}</span>
                 <span>•</span>
                 <span>{formatDate(storeSelectedComplaint.created_at)}</span>
               </div>
@@ -300,33 +302,33 @@ function ComplaintsPage() {
             <div className="flex-1 overflow-y-auto p-6">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-gray-400">Loading details...</div>
+                  <div className="text-gray-400">{t("loading_details")}</div>
                 </div>
               ) : (
                 <>
                   {/* Complaint Details */}
                   <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Details</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t("details.title")}</h3>
                     <div className="space-y-3">
                       <div>
-                        <span className="text-gray-400 text-sm">Complaint:</span>
-                        <p className="text-white mt-1">{storeSelectedComplaint.description || 'No complaint text available'}</p>
+                        <span className="text-gray-400 text-sm">{t("details.complaint")}</span>
+                        <p className="text-white mt-1">{storeSelectedComplaint.description || t("details.no_text")}</p>
                       </div>
                       {storeSelectedComplaint.creator_name && (
                         <div>
-                          <span className="text-gray-400 text-sm">Created by:</span>
+                          <span className="text-gray-400 text-sm">{t("details.created_by")}</span>
                           <p className="text-white">{storeSelectedComplaint.creator_name}</p>
                         </div>
                       )}
                       {storeSelectedComplaint.assigned_to_name && (
                         <div>
-                          <span className="text-gray-400 text-sm">Assigned to:</span>
+                          <span className="text-gray-400 text-sm">{t("details.assigned_to")}</span>
                           <p className="text-white">{storeSelectedComplaint.assigned_to_name}</p>
                         </div>
                       )}
                       {storeSelectedComplaint.claimed_by_name && (
                         <div>
-                          <span className="text-gray-400 text-sm">Claimed by:</span>
+                          <span className="text-gray-400 text-sm">{t("details.claimed_by")}</span>
                           <p className="text-white">{storeSelectedComplaint.claimed_by_name}</p>
                         </div>
                       )}
@@ -336,7 +338,7 @@ function ComplaintsPage() {
                   {/* Actions */}
                   {storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
                     <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
-                      <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4">{t("actions.title")}</h3>
                       <div className="flex flex-wrap gap-3">
                         {/* Staff can escalate */}
                         {isStaff && storeSelectedComplaint.status !== "escalated" && (
@@ -344,7 +346,7 @@ function ComplaintsPage() {
                             onClick={() => setShowEscalateModal(true)}
                             className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
                           >
-                            Escalate to Manager
+                            {t("actions.escalate")}
                           </button>
                         )}
 
@@ -354,7 +356,7 @@ function ComplaintsPage() {
                             onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
                           >
-                            Claim Complaint
+                            {t("actions.claim")}
                           </button>
                         )}
 
@@ -365,13 +367,13 @@ function ComplaintsPage() {
                               onClick={() => setShowResolveModal(true)}
                               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
                             >
-                              Resolve
+                              {t("actions.resolve")}
                             </button>
                             <button
                               onClick={() => setShowCloseModal(true)}
                               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
                             >
-                              Close
+                              {t("actions.close")}
                             </button>
                           </>
                         )}
@@ -381,9 +383,9 @@ function ComplaintsPage() {
 
                   {/* History */}
                   <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">History</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t("history.title")}</h3>
                     {storeComplaintHistory.length === 0 ? (
-                      <p className="text-gray-400 text-sm">No history available</p>
+                      <p className="text-gray-400 text-sm">{t("history.no_history")}</p>
                     ) : (
                       <div className="space-y-4">
                         {storeComplaintHistory.map((history) => (
@@ -394,11 +396,16 @@ function ComplaintsPage() {
                             <div className="flex items-start justify-between">
                               <div>
                                 <p className="text-white font-medium">
-                                  Status changed to: <span className="capitalize">{history.new_status.replace("_", " ")}</span>
+                                  {t("history.status_changed")} <span className="capitalize">{t(`status.${history.new_status}`)}</span>
                                 </p>
                                 {history.notes && (
-                                  <p className="text-gray-300 text-sm mt-1">{history.notes}</p>
+                                  <p className="text-gray-300 text-sm mt-1 italic">
+                                    "{history.notes}"
+                                  </p>
                                 )}
+                                <p className="text-gray-500 text-xs mt-1">
+                                  {t("history.changed_by", { user_id: history.changed_by_user_id })}
+                                </p>
                               </div>
                               <span className="text-xs text-gray-500">
                                 {formatDate(history.updated_at)}
@@ -429,7 +436,7 @@ function ComplaintsPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p className="text-lg">Select a complaint to view details</p>
+              <p>{t("select_complaint")}</p>
             </div>
           </div>
         )}
@@ -439,16 +446,16 @@ function ComplaintsPage() {
       {showEscalateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Escalate to Manager</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t("modals.escalate.title")}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Escalation Notes
+                  {t("modals.escalate.notes")}
                 </label>
                 <textarea
                   value={escalateData.notes}
                   onChange={(e) => setEscalateData({ notes: e.target.value })}
-                  placeholder="Explain the reason for escalation..."
+                  placeholder={t("modals.escalate.notes_placeholder")}
                   className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
                 />
               </div>
@@ -458,7 +465,7 @@ function ComplaintsPage() {
                   disabled={!escalateData.notes.trim()}
                   className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Escalate
+                  {t("modals.escalate.submit")}
                 </button>
                 <button
                   onClick={() => {
@@ -467,7 +474,7 @@ function ComplaintsPage() {
                   }}
                   className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
                 >
-                  Cancel
+                  {t("modals.escalate.cancel")}
                 </button>
               </div>
             </div>
@@ -479,16 +486,16 @@ function ComplaintsPage() {
       {showResolveModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Resolve Complaint</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t("modals.resolve.title")}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Resolution Notes
+                  {t("modals.resolve.notes")}
                 </label>
                 <textarea
                   value={resolveData.resolution_notes}
                   onChange={(e) => setResolveData({ ...resolveData, resolution_notes: e.target.value })}
-                  placeholder="Describe how the issue was resolved..."
+                  placeholder={t("modals.resolve.notes_placeholder")}
                   className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
                 />
               </div>
@@ -501,7 +508,7 @@ function ComplaintsPage() {
                   className="w-4 h-4 bg-[#2a2a2a] border-gray-700 rounded cursor-pointer"
                 />
                 <label htmlFor="resolve-cancel-order" className="text-sm text-gray-300 cursor-pointer">
-                  Cancel associated order (set status to rejected)
+                  {t("modals.resolve.cancel_order")}
                 </label>
               </div>
               <div className="flex gap-3 mt-6">
@@ -510,7 +517,7 @@ function ComplaintsPage() {
                   disabled={!resolveData.resolution_notes.trim()}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Resolve
+                  {t("modals.resolve.submit")}
                 </button>
                 <button
                   onClick={() => {
@@ -519,7 +526,7 @@ function ComplaintsPage() {
                   }}
                   className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
                 >
-                  Cancel
+                  {t("modals.resolve.cancel")}
                 </button>
               </div>
             </div>
@@ -531,16 +538,16 @@ function ComplaintsPage() {
       {showCloseModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Close Complaint</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t("modals.close.title")}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Resolution Notes
+                  {t("modals.close.notes")}
                 </label>
                 <textarea
                   value={closeData.resolution_notes}
                   onChange={(e) => setCloseData({ ...closeData, resolution_notes: e.target.value })}
-                  placeholder="Explain why the complaint is being closed..."
+                  placeholder={t("modals.close.notes_placeholder")}
                   className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
                 />
               </div>
@@ -553,7 +560,7 @@ function ComplaintsPage() {
                   className="w-4 h-4 bg-[#2a2a2a] border-gray-700 rounded cursor-pointer"
                 />
                 <label htmlFor="close-cancel-order" className="text-sm text-gray-300 cursor-pointer">
-                  Cancel associated order (set status to rejected)
+                  {t("modals.close.cancel_order")}
                 </label>
               </div>
               <div className="flex gap-3 mt-6">
@@ -562,7 +569,7 @@ function ComplaintsPage() {
                   disabled={!closeData.resolution_notes.trim()}
                   className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Close
+                  {t("modals.close.submit")}
                 </button>
                 <button
                   onClick={() => {
@@ -571,7 +578,7 @@ function ComplaintsPage() {
                   }}
                   className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
                 >
-                  Cancel
+                  {t("modals.close.cancel")}
                 </button>
               </div>
             </div>

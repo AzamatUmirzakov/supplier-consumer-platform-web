@@ -105,5 +105,73 @@
         "order_status_changed": "Order #{id} status changed from \"{oldStatus}\" to \"{newStatus}\""
       }
     }
+  },
+  "Complaints": {
+    "title": "Complaints",
+    "tabs": {
+      "assigned": "Assigned to Me",
+      "managed": "My Managed",
+      "escalated": "Escalated",
+      "company": "All Company"
+    },
+    "loading": "Loading...",
+    "no_complaints": "No complaints found",
+    "complaint": "Complaint",
+    "order": "Order",
+    "details": {
+      "title": "Details",
+      "complaint": "Complaint:",
+      "no_text": "No complaint text available",
+      "created_by": "Created by:",
+      "assigned_to": "Assigned to:",
+      "claimed_by": "Claimed by:"
+    },
+    "actions": {
+      "title": "Actions",
+      "escalate": "Escalate to Manager",
+      "claim": "Claim Complaint",
+      "resolve": "Resolve",
+      "close": "Close"
+    },
+    "history": {
+      "title": "History",
+      "no_history": "No history available",
+      "status_changed": "Status changed to:",
+      "changed_by": "Changed by user #{user_id}"
+    },
+    "modals": {
+      "escalate": {
+        "title": "Escalate Complaint",
+        "notes": "Notes",
+        "notes_placeholder": "Add notes about why this is being escalated...",
+        "cancel": "Cancel",
+        "submit": "Escalate"
+      },
+      "resolve": {
+        "title": "Resolve Complaint",
+        "notes": "Resolution Notes",
+        "notes_placeholder": "Describe how the complaint was resolved...",
+        "cancel_order": "Cancel Order",
+        "cancel": "Cancel",
+        "submit": "Resolve"
+      },
+      "close": {
+        "title": "Close Complaint",
+        "notes": "Closing Notes",
+        "notes_placeholder": "Explain why the complaint is being closed...",
+        "cancel_order": "Cancel Order",
+        "cancel": "Cancel",
+        "submit": "Close"
+      }
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "escalated": "Escalated",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "select_complaint": "Select a complaint to view details",
+    "loading_details": "Loading details..."
   }
 }
