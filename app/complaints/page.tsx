@@ -334,50 +334,50 @@ function ComplaintsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
-                    <div className="flex flex-wrap gap-3">
-                      {/* Staff can escalate */}
-                      {isStaff && storeSelectedComplaint.status !== "escalated" && storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
-                        <button
-                          onClick={() => setShowEscalateModal(true)}
-                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
-                        >
-                          Escalate to Manager
-                        </button>
-                      )}
+                  {storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
+                    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
+                      <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
+                      <div className="flex flex-wrap gap-3">
+                        {/* Staff can escalate */}
+                        {isStaff && storeSelectedComplaint.status !== "escalated" && (
+                          <button
+                            onClick={() => setShowEscalateModal(true)}
+                            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
+                          >
+                            Escalate to Manager
+                          </button>
+                        )}
 
-                      {/* Manager can claim escalated complaints */}
-                      {(isManager || isOwner) && storeSelectedComplaint.status === "escalated" && !storeSelectedComplaint.claimed_by_user_id && (
-                        <button
-                          onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
-                        >
-                          Claim Complaint
-                        </button>
-                      )}
+                        {/* Manager/Owner: if escalated and unclaimed, only show claim button */}
+                        {(isManager || isOwner) && storeSelectedComplaint.status === "escalated" && !storeSelectedComplaint.claimed_by_user_id && (
+                          <button
+                            onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
+                          >
+                            Claim Complaint
+                          </button>
+                        )}
 
-                      {/* Manager/Owner can resolve */}
-                      {(isManager || isOwner) && storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
-                        <button
-                          onClick={() => setShowResolveModal(true)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
-                        >
-                          Resolve
-                        </button>
-                      )}
-
-                      {/* Manager/Owner can close */}
-                      {(isManager || isOwner) && storeSelectedComplaint.status !== "closed" && (
-                        <button
-                          onClick={() => setShowCloseModal(true)}
-                          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
-                        >
-                          Close
-                        </button>
-                      )}
+                        {/* Manager/Owner: if escalated and claimed OR not escalated, show resolve and close buttons */}
+                        {(isManager || isOwner) && (storeSelectedComplaint.status !== "escalated" || storeSelectedComplaint.claimed_by_user_id) && (
+                          <>
+                            <button
+                              onClick={() => setShowResolveModal(true)}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
+                            >
+                              Resolve
+                            </button>
+                            <button
+                              onClick={() => setShowCloseModal(true)}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+                            >
+                              Close
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* History */}
                   <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
