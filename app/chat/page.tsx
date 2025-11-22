@@ -107,7 +107,11 @@ function ChatPage() {
       .then((data) => {
         console.log("Received chat data:", data);
         if (data) {
-          setMessages(data.messages);
+          // Sort messages by timestamp to ensure chronological order
+          const sortedMessages = [...data.messages].sort((a, b) =>
+            new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+          );
+          setMessages(sortedMessages);
         }
       })
       .catch((error) => {
@@ -142,7 +146,13 @@ function ChatPage() {
             type: message.message_type || "text",
             sent_at: message.sent_at!,
           };
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) => {
+            const updated = [...prev, newMessage];
+            // Sort to ensure chronological order
+            return updated.sort((a, b) =>
+              new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+            );
+          });
         } else if (message.type === "message_sent") {
           // Our message was sent successfully
           console.log("Message sent successfully:", message.message_id);
@@ -181,7 +191,13 @@ function ChatPage() {
       type: "text",
       sent_at: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, optimisticMessage]);
+    setMessages((prev) => {
+      const updated = [...prev, optimisticMessage];
+      // Sort to ensure chronological order
+      return updated.sort((a, b) =>
+        new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+      );
+    });
 
     // Send through WebSocket
     sendChatMessage(wsRef.current, messageInput, "text");

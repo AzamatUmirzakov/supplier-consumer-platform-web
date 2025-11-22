@@ -72,7 +72,11 @@ function OrdersPage() {
           }
           return msg;
         });
-        setMessages(parsedMessages);
+        // Sort messages by timestamp to ensure chronological order
+        const sortedMessages = parsedMessages.sort((a, b) =>
+          new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+        );
+        setMessages(sortedMessages);
       }
       setIsLoadingMessages(false);
     };
@@ -103,7 +107,13 @@ function OrdersPage() {
             }
           }
 
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) => {
+            const updated = [...prev, newMessage];
+            // Sort to ensure chronological order
+            return updated.sort((a, b) =>
+              new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+            );
+          });
         }
       },
       (error) => {
@@ -136,7 +146,13 @@ function OrdersPage() {
       type: "text",
       sent_at: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, tempMessage]);
+    setMessages((prev) => {
+      const updated = [...prev, tempMessage];
+      // Sort to ensure chronological order
+      return updated.sort((a, b) =>
+        new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+      );
+    });
 
     sendChatMessage(wsRef.current, messageInput);
     setMessageInput("");
