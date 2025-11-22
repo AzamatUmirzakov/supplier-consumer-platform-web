@@ -24,7 +24,7 @@
   },
   "Sidebar": {
     "dashboard": "Басқару панелі",
-    "catalogs": "Каталогтар",
+    "catalogs": "Каталог",
     "linkings": "Байланыстар",
     "orders": "Тапсырыстар",
     "complaints": "Шағымдар",
@@ -33,6 +33,26 @@
     "logout": "Шығу",
     "language": "Тіл",
     "chats": "Чаттар"
+  },
+  "Dashboard": {
+    "title": "Басқару панелі",
+    "total_revenue": "Жалпы кіріс",
+    "orders_today": "Бүгінгі тапсырыстар",
+    "created_orders": "Жасалған тапсырыстар",
+    "low_stock": "Аз қор",
+    "revenue_trend": "Кіріс тенденциясы",
+    "order_status": "Тапсырыс күйі",
+    "recent_orders": "Соңғы тапсырыстар",
+    "low_stock_alert": "Аз қор туралы ескерту",
+    "stock": "Қор: {current} / {threshold}",
+    "order_number": "Тапсырыс №{id}",
+    "status": {
+      "created": "жасалды",
+      "processing": "өңделуде",
+      "shipping": "жеткізілуде",
+      "completed": "аяқталды",
+      "rejected": "қабылданбады"
+    }
   },
   "Linkings": {
     "title": "Байланыстар",

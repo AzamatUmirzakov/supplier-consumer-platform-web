@@ -24,15 +24,35 @@
   },
   "Sidebar": {
     "dashboard": "Панель управления",
-    "catalogs": "Каталоги",
+    "catalogs": "Каталог",
     "linkings": "Связи",
     "orders": "Заказы",
     "complaints": "Жалобы",
     "profile": "Профиль",
     "company": "Компания",
-    "logout": "Выйти",
+    "logout": "Выход",
     "language": "Язык",
     "chats": "Чаты"
+  },
+  "Dashboard": {
+    "title": "Панель управления",
+    "total_revenue": "Общий доход",
+    "orders_today": "Заказы сегодня",
+    "created_orders": "Созданные заказы",
+    "low_stock": "Низкий запас",
+    "revenue_trend": "Тенденция дохода",
+    "order_status": "Статус заказов",
+    "recent_orders": "Последние заказы",
+    "low_stock_alert": "Предупреждение о низком запасе",
+    "stock": "Запас: {current} / {threshold}",
+    "order_number": "Заказ №{id}",
+    "status": {
+      "created": "создан",
+      "processing": "обрабатывается",
+      "shipping": "доставляется",
+      "completed": "завершен",
+      "rejected": "отклонен"
+    }
   },
   "Linkings": {
     "title": "Связи",

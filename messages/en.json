@@ -34,6 +34,26 @@
     "language": "Language",
     "chats": "Chats"
   },
+  "Dashboard": {
+    "title": "Dashboard",
+    "total_revenue": "Total Revenue",
+    "orders_today": "Orders Today",
+    "created_orders": "Created Orders",
+    "low_stock": "Low Stock",
+    "revenue_trend": "Revenue Trend",
+    "order_status": "Order Status",
+    "recent_orders": "Recent Orders",
+    "low_stock_alert": "Low Stock Alert",
+    "stock": "Stock: {current} / {threshold}",
+    "order_number": "Order #{id}",
+    "status": {
+      "created": "created",
+      "processing": "processing",
+      "shipping": "shipping",
+      "completed": "completed",
+      "rejected": "rejected"
+    }
+  },
   "Linkings": {
     "title": "Linkings",
     "loading": "Loading linkings...",
