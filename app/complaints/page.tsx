@@ -109,10 +109,13 @@ function ComplaintsPage() {
     await resolveComplaint(selectedId, resolveData);
     setShowResolveModal(false);
     setResolveData({ resolution_notes: "", cancel_order: false });
-    if (selectedId) {
-      fetchComplaintDetails(selectedId);
-      fetchComplaintHistory(selectedId);
-    }
+
+    // Clear selection since complaint status changed
+    setSelectedId(null);
+    setSelectedComplaint(null);
+
+    // Refresh the current tab
+    handleTabChange(activeTab);
   };
 
   const handleClose = async () => {
@@ -120,10 +123,13 @@ function ComplaintsPage() {
     await closeComplaint(selectedId, closeData);
     setShowCloseModal(false);
     setCloseData({ resolution_notes: "", cancel_order: false });
-    if (selectedId) {
-      fetchComplaintDetails(selectedId);
-      fetchComplaintHistory(selectedId);
-    }
+
+    // Clear selection since complaint is now closed
+    setSelectedId(null);
+    setSelectedComplaint(null);
+
+    // Refresh the current tab
+    handleTabChange(activeTab);
   };
 
   const getStatusColor = (status: string) => {

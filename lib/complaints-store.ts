@@ -286,8 +286,6 @@ export const useComplaintsStore = create<ComplaintsStore>((set, get) => ({
         throw new Error("Failed to resolve complaint");
       }
 
-      // Refresh the current list
-      await get().fetchManagedComplaints();
       set({ loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
@@ -310,12 +308,6 @@ export const useComplaintsStore = create<ComplaintsStore>((set, get) => ({
         throw new Error("Failed to close complaint");
       }
 
-      // Refresh the appropriate list based on user role
-      const currentView = get().complaints;
-      if (currentView.length > 0) {
-        // Try to refresh the current view
-        await get().fetchManagedComplaints();
-      }
       set({ loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
