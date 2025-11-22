@@ -2,7 +2,15 @@ import { API_BASE } from "./constants";
 import { useAuthStore } from "./useAuthStore";
 import { apiFetch } from "./api-fetch";
 
-export type MessageType = "text" | "image" | "file";
+export type MessageType = "text" | "image" | "file" | "order";
+
+export type StatusChangeEvent = {
+  event: "status_change";
+  entity: string;
+  id: number;
+  old_status: string;
+  new_status: string;
+};
 
 export type Message = {
   message_id: number;
@@ -11,6 +19,7 @@ export type Message = {
   body: string;
   type: MessageType;
   sent_at: string;
+  event_data?: StatusChangeEvent;
 };
 
 export type ChatMessage = {

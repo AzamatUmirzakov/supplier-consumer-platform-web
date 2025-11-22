@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useLinkingsStore, LinkingStatus, fetchCompanyDetails, CompanyDetails, Linking } from "@/lib/linkings-store";
-import { fetchChatMessages, createChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage } from "@/lib/chat-api";
+import { fetchChatMessages, createChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage, StatusChangeEvent } from "@/lib/chat-api";
 import { useCompanyStore } from "@/lib/company-store";
 import useAuthStore from "@/lib/useAuthStore";
 
@@ -196,6 +196,7 @@ function ChatPage() {
     });
   };
 
+  console.log("Messages:", messages);
   return (
     <div className="flex h-screen bg-[#0a0a0a]">
       {/* Chats Sidebar */}

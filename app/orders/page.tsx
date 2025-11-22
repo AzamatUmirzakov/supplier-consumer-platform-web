@@ -60,7 +60,19 @@ function OrdersPage() {
       const data = await fetchOrderChatMessages(selectedOrderId);
       console.log("Received order chat data:", data);
       if (data && data.messages) {
-        setMessages(data.messages);
+        // Parse event_data for order (status_change) messages
+        const parsedMessages = data.messages.map((msg) => {
+          if (msg.type === "order") {
+            try {
+              return { ...msg, event_data: JSON.parse(msg.body) };
+            } catch (e) {
+              console.error("Failed to parse event_data:", e);
+              return msg;
+            }
+          }
+          return msg;
+        });
+        setMessages(parsedMessages);
       }
       setIsLoadingMessages(false);
     };
@@ -81,6 +93,16 @@ function OrdersPage() {
             type: message.message_type || "text",
             sent_at: message.sent_at,
           };
+
+          // Parse event_data if it's an order (status_change) message
+          if (newMessage.type === "order") {
+            try {
+              newMessage.event_data = JSON.parse(newMessage.body);
+            } catch (e) {
+              console.error("Failed to parse event_data:", e);
+            }
+          }
+
           setMessages((prev) => [...prev, newMessage]);
         }
       },
@@ -126,6 +148,17 @@ function OrdersPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const formatStatusChange = (event: any) => {
+    if (!event) return "Status updated";
+
+    const entity = event.entity || "item";
+    const oldStatus = event.old_status || "";
+    const newStatus = event.new_status || "";
+    const id = event.id || "";
+
+    return `${entity.charAt(0).toUpperCase() + entity.slice(1)} #${id} status changed from "${oldStatus}" to "${newStatus}"`;
   };
 
   // Group orders by order_id
@@ -441,6 +474,23 @@ function OrdersPage() {
                     </div>
                   ) : (
                     messages.map((message) => {
+                      // Order status change messages are displayed as announcements
+                      if (message.type === "order") {
+                        return (
+                          <div key={message.message_id} className="flex justify-center my-4">
+                            <div className="max-w-lg px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
+                              <p className="text-sm text-gray-300 text-center">
+                                {formatStatusChange(message.event_data)}
+                              </p>
+                              <p className="text-xs text-gray-500 text-center mt-1">
+                                {formatMessageTime(message.sent_at)}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Regular messages
                       const isMyMessage = message.sender_id === user?.user_id;
                       return (
                         <div
