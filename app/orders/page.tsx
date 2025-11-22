@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useOrdersStore, Order } from "@/lib/orders-store";
+import { useLinkingsStore, LinkingStatus, fetchCompanyDetails, CompanyDetails } from "@/lib/linkings-store";
+import { useCompanyStore } from "@/lib/company-store";
 import { useTranslations } from "next-intl";
 import { fetchOrderChatMessages, createOrderChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage } from "@/lib/chat-api";
 import useAuthStore from "@/lib/useAuthStore";
 
 type GroupedOrder = {
   order_id: number;
+  linking_id: number;
   items: Order[];
   status: Order["order_status"];
   total_price: number;
@@ -18,6 +21,9 @@ function OrdersPage() {
   const orders = useOrdersStore((state) => state.orders);
   const fetchOrders = useOrdersStore((state) => state.fetchOrders);
   const changeOrderStatus = useOrdersStore((state) => state.changeOrderStatus);
+  const { linkings, fetchLinkings } = useLinkingsStore();
+  const myCompany = useCompanyStore((state) => state.company);
+  const getCompanyDetails = useCompanyStore((state) => state.getCompanyDetails);
 
   const t = useTranslations("Orders");
   const user = useAuthStore((state) => state.user);
@@ -27,12 +33,44 @@ function OrdersPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Determine if we're a supplier or consumer
+  const isSupplier = myCompany.company_type === "supplier";
+
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    fetchLinkings();
+    getCompanyDetails();
+  }, [fetchOrders, fetchLinkings, getCompanyDetails]);
+
+  // Get active linkings
+  const activeLinkings = linkings.filter((l) => l.status === LinkingStatus.accepted);
+
+  // Fetch company details for all active linkings
+  useEffect(() => {
+    activeLinkings.forEach(async (linking) => {
+      const otherCompanyId = isSupplier ? linking.consumer_company_id : linking.supplier_company_id;
+      if (!companiesDetails.has(otherCompanyId)) {
+        const data = await fetchCompanyDetails(otherCompanyId);
+        if (data) {
+          setCompaniesDetails((prev) => new Map(prev).set(otherCompanyId, data));
+        }
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLinkings, isSupplier]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -179,7 +217,9 @@ function OrdersPage() {
       if (event.old_status == null) {
         return `Complaint was created`;
       }
-      return `Complaint status updated from "${complaintDictionary[event.old_status]}" to "${complaintDictionary[event.new_status]}"`;
+      const oldStatusKey = event.old_status as keyof typeof complaintDictionary;
+      const newStatusKey = event.new_status as keyof typeof complaintDictionary;
+      return `Complaint status updated from "${complaintDictionary[oldStatusKey]}" to "${complaintDictionary[newStatusKey]}"`;
     }
 
     const entity = event.entity || "item";
@@ -190,7 +230,7 @@ function OrdersPage() {
     return `${entity.charAt(0).toUpperCase() + entity.slice(1)} #${id} status changed from "${oldStatus}" to "${newStatus}"`;
   };
 
-  // Group orders by order_id
+  // Group orders by order_id first, then by linking_id
   const groupedOrders = useMemo(() => {
     const grouped = new Map<number, GroupedOrder>();
 
@@ -198,6 +238,7 @@ function OrdersPage() {
       if (!grouped.has(order.order_id)) {
         grouped.set(order.order_id, {
           order_id: order.order_id,
+          linking_id: order.linking_id,
           items: [],
           status: order.order_status,
           total_price: order.order_total_price,
@@ -212,6 +253,21 @@ function OrdersPage() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [orders]);
+
+  // Group orders by linking
+  const ordersByLinking = useMemo(() => {
+    const byLinking = new Map<number, GroupedOrder[]>();
+
+    groupedOrders.forEach((order) => {
+      const linkingId = order.linking_id;
+      if (!byLinking.has(linkingId)) {
+        byLinking.set(linkingId, []);
+      }
+      byLinking.get(linkingId)!.push(order);
+    });
+
+    return byLinking;
+  }, [groupedOrders]);
 
   const selectedOrder = groupedOrders.find((o) => o.order_id === selectedOrderId);
 
@@ -272,32 +328,57 @@ function OrdersPage() {
               </div>
             </div>
           ) : (
-            groupedOrders.map((order) => (
-              <div
-                key={order.order_id}
-                onClick={() => setSelectedOrderId(order.order_id)}
-                className={`p-4 cursor-pointer transition-colors border-b border-[#2a2a2a] ${selectedOrderId === order.order_id
-                  ? "bg-[#2a2a2a]"
-                  : "hover:bg-[#222222]"
-                  }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-white">
-                    {t("order")} #{order.order_id}
-                  </h3>
-                  <span className={`${getStatusColor(order.status)} text-white text-xs px-2 py-1 rounded capitalize`}>
-                    {t(`status.${order.status}`)}
-                  </span>
+            Array.from(ordersByLinking.entries()).map(([linkingId, orders]) => {
+              const linking = activeLinkings.find((l) => l.linking_id === linkingId);
+              const otherCompanyId = isSupplier ? linking?.consumer_company_id : linking?.supplier_company_id;
+              const companyDetails = otherCompanyId ? companiesDetails.get(otherCompanyId) : null;
+              const companyName = companyDetails?.name || `Company #${otherCompanyId || linkingId}`;
+
+              return (
+                <div key={linkingId}>
+                  {/* Company Header */}
+                  <div className="sticky top-0 bg-[#252525] border-b border-[#2a2a2a] px-4 py-3 z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                        {getInitials(companyName)}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">{companyName}</h3>
+                        <p className="text-xs text-gray-400">{orders.length} {orders.length === 1 ? "order" : "orders"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Orders in this linking */}
+                  {orders.map((order) => (
+                    <div
+                      key={order.order_id}
+                      onClick={() => setSelectedOrderId(order.order_id)}
+                      className={`p-4 cursor-pointer transition-colors border-b border-[#2a2a2a] ${selectedOrderId === order.order_id
+                        ? "bg-[#2a2a2a]"
+                        : "hover:bg-[#222222]"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-white">
+                          {t("order")} #{order.order_id}
+                        </h3>
+                        <span className={`${getStatusColor(order.status)} text-white text-xs px-2 py-1 rounded capitalize`}>
+                          {t(`status.${order.status || "created"}`)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>{order.items.length} {t("items")}</span>
+                        <span className="font-semibold text-white">{order.total_price != null ? order.total_price.toFixed(2) : "0.00"}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDate(order.created_at)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between text-sm text-gray-400">
-                  <span>{order.items.length} {t("items")}</span>
-                  <span className="font-semibold text-white">{order.total_price.toFixed(2)}</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {formatDate(order.created_at)}
-                </p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

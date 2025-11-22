@@ -6,6 +6,7 @@ import { apiFetch } from "./api-fetch";
 
 export type Order = {
   order_id: number;
+  linking_id: number;
   product_id: number,
   product_name: string,
   product_description: string,
