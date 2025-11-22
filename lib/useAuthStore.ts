@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthStore>()(
           });
         } catch (error: any) {
           const errorMessage = error instanceof TypeError
-            ? "Failed to connect to server. Make sure the API server is running at http://127.0.0.1:8000"
+            ? "Failed to connect to server. Make sure the API server is running"
             : error.message;
           set({
             error: errorMessage,
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthStore>()(
           });
         } catch (error: any) {
           const errorMessage = error instanceof TypeError
-            ? "Failed to connect to server. Make sure the API server is running at http://127.0.0.1:8000"
+            ? "Failed to connect to server. Make sure the API server is running"
             : error.message;
           set({
             error: errorMessage,
