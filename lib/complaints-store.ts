@@ -49,7 +49,7 @@ type ComplaintsStore = {
   fetchComplaintHistory: (complaintId: number) => Promise<void>;
 
   createComplaint: (orderId: number, description: string) => Promise<void>;
-  escalateComplaint: (complaintId: number) => Promise<void>;
+  escalateComplaint: (complaintId: number, data: { notes: string }) => Promise<void>;
   claimComplaint: (complaintId: number) => Promise<void>;
   resolveComplaint: (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => Promise<void>;
   closeComplaint: (complaintId: number, data: { resolution_notes: string; cancel_order: boolean }) => Promise<void>;
@@ -222,12 +222,15 @@ export const useComplaintsStore = create<ComplaintsStore>((set, get) => ({
     }
   },
 
-  escalateComplaint: async (complaintId: number) => {
+  escalateComplaint: async (complaintId: number, data: { notes: string }) => {
     set({ loading: true, error: null });
     try {
       const response = await apiFetch(`${API_BASE}/complaints/${complaintId}/escalate`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          data
+        ),
       });
 
       if (!response.ok) {

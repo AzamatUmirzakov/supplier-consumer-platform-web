@@ -30,8 +30,10 @@ function ComplaintsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showEscalateModal, setShowEscalateModal] = useState(false);
   const [resolveData, setResolveData] = useState({ resolution_notes: "", cancel_order: false });
   const [closeData, setCloseData] = useState({ resolution_notes: "", cancel_order: false });
+  const [escalateData, setEscalateData] = useState({ notes: "" });
 
   // Determine user role
   const userRole = user?.role || "staff";
@@ -83,8 +85,11 @@ function ComplaintsPage() {
     fetchComplaintHistory(complaint.complaint_id);
   };
 
-  const handleEscalate = async (complaintId: number) => {
-    await escalateComplaint(complaintId);
+  const handleEscalate = async () => {
+    if (!selectedId) return;
+    await escalateComplaint(selectedId, escalateData);
+    setShowEscalateModal(false);
+    setEscalateData({ notes: "" });
     setSelectedId(null);
     setSelectedComplaint(null);
   };
@@ -335,8 +340,8 @@ function ComplaintsPage() {
                       {/* Staff can escalate */}
                       {isStaff && storeSelectedComplaint.status !== "escalated" && storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
                         <button
-                          onClick={() => handleEscalate(storeSelectedComplaint.complaint_id)}
-                          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium cursor-pointer"
+                          onClick={() => setShowEscalateModal(true)}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
                         >
                           Escalate to Manager
                         </button>
@@ -429,6 +434,46 @@ function ComplaintsPage() {
           </div>
         )}
       </div>
+
+      {/* Escalate Modal */}
+      {showEscalateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-white mb-4">Escalate to Manager</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Escalation Notes
+                </label>
+                <textarea
+                  value={escalateData.notes}
+                  onChange={(e) => setEscalateData({ notes: e.target.value })}
+                  placeholder="Explain the reason for escalation..."
+                  className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 min-h-[100px]"
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleEscalate}
+                  disabled={!escalateData.notes.trim()}
+                  className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Escalate
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEscalateModal(false);
+                    setEscalateData({ notes: "" });
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Resolve Modal */}
       {showResolveModal && (
