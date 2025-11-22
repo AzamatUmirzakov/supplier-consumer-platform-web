@@ -214,29 +214,26 @@ function OrdersPage() {
   };
 
   const formatStatusChange = (event: any) => {
-    const complaintDictionary = {
-      "open": "open",
-      "escalated": "escalated",
-      "in_progress": "in progress",
-      "resolved": "resolved",
-      "closed": "rejected",
-    };
-
     if (event.entity === "complaint") {
       if (event.old_status == null) {
-        return `Complaint was created`;
+        return t("chat.complaint.created");
       }
-      const oldStatusKey = event.old_status as keyof typeof complaintDictionary;
-      const newStatusKey = event.new_status as keyof typeof complaintDictionary;
-      return `Complaint status updated from "${complaintDictionary[oldStatusKey]}" to "${complaintDictionary[newStatusKey]}"`;
+
+      return t("chat.complaint.updated_from", {
+        oldStatus: t(`chat.complaint.status.${event.old_status}`),
+        newStatus: t(`chat.complaint.status.${event.new_status}`),
+      });
     }
 
-    const entity = event.entity || "item";
+    const id = event.id || "";
     const oldStatus = event.old_status || "";
     const newStatus = event.new_status || "";
-    const id = event.id || "";
 
-    return `${entity.charAt(0).toUpperCase() + entity.slice(1)} #${id} status changed from "${oldStatus}" to "${newStatus}"`;
+    return t("chat.status_change.order_status_changed", {
+      oldStatus: t(`status.${oldStatus}`),
+      newStatus: t(`status.${newStatus}`),
+      id,
+    });
   };
 
   // Group orders by order_id first, then by linking_id
@@ -353,7 +350,7 @@ function OrdersPage() {
                       </div>
                       <div>
                         <h3 className="text-sm font-semibold text-white">{companyName}</h3>
-                        <p className="text-xs text-gray-400">{orders.length} {orders.length === 1 ? "order" : "orders"}</p>
+                        <p className="text-xs text-gray-400">{orders.length} {orders.length === 1 ? t("order_list.order") : t("order_list.orders")}</p>
                       </div>
                     </div>
                   </div>
@@ -426,7 +423,7 @@ function OrdersPage() {
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                         />
                       </svg>
-                      {isChatOpen ? "Hide Chat" : "Show Chat"}
+                      {isChatOpen ? t("chat.hide_chat") : t("chat.show_chat")}
                     </button>
                     {/* change status */}
                     <select
@@ -558,7 +555,7 @@ function OrdersPage() {
               <div className="w-96 bg-[#1a1a1a] border-l border-[#2a2a2a] flex flex-col h-full">
                 {/* Chat Header */}
                 <div className="p-4 border-b border-[#2a2a2a] flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Order Chat</h3>
+                  <h3 className="text-lg font-semibold text-white">{t("chat.order_chat")}</h3>
                   <button
                     onClick={() => setIsChatOpen(false)}
                     className="cursor-pointer text-gray-400 hover:text-white transition-colors"
@@ -583,12 +580,12 @@ function OrdersPage() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isLoadingMessages ? (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-500">Loading messages...</p>
+                      <p className="text-gray-500">{t("chat.loading_messages")}</p>
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                       <p className="text-gray-500 text-center text-sm">
-                        No messages yet. Start the conversation!
+                        {t("chat.no_messages_yet")}
                       </p>
                     </div>
                   ) : (
@@ -650,14 +647,14 @@ function OrdersPage() {
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                      placeholder="Type a message..."
+                      placeholder={t("chat.type_your_message")}
                       className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-gray-600"
                     />
                     <button
                       onClick={handleSendMessage}
                       className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                     >
-                      Send
+                      {t("chat.send")}
                     </button>
                   </div>
                 </div>

@@ -60,6 +60,10 @@
     "items": "items",
     "total": "Total",
     "select_order_to_view_details": "Select an order to view details",
+    "order_list": {
+      "order": "order",
+      "orders": "orders"
+    },
     "status": {
       "created": "Created",
       "processing": "Processing",
@@ -77,6 +81,29 @@
       "order_summary": "Order Summary",
       "created": "Created",
       "last_updated": "Last Updated"
+    },
+    "chat": {
+      "order_chat": "Order Chat",
+      "loading_messages": "Loading messages...",
+      "no_messages_yet": "No messages yet.",
+      "send": "Send",
+      "type_your_message": "Type a message...",
+      "show_chat": "Show Chat",
+      "hide_chat": "Hide Chat",
+      "complaint": {
+        "created": "Complaint was created",
+        "updated_from": "Complaint status updated from \"{oldStatus}\" to \"{newStatus}\"",
+        "status": {
+          "open": "open",
+          "escalated": "escalated",
+          "in_progress": "in progress",
+          "resolved": "resolved",
+          "closed": "closed"
+        }
+      },
+      "status_change": {
+        "order_status_changed": "Order #{id} status changed from \"{oldStatus}\" to \"{newStatus}\""
+      }
     }
   }
 }

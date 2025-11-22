@@ -60,6 +60,10 @@
     "items": "товаров",
     "total": "Итого",
     "select_order_to_view_details": "Выберите заказ, чтобы просмотреть детали",
+    "order_list": {
+      "order": "заказ",
+      "orders": "заказы"
+    },
     "status": {
       "created": "Создан",
       "processing": "В обработке",
@@ -77,6 +81,29 @@
       "order_summary": "Сводка заказа",
       "created": "Создан",
       "last_updated": "Последнее обновление"
+    },
+    "chat": {
+      "order_chat": "Чат заказа",
+      "loading_messages": "Загрузка сообщений...",
+      "no_messages_yet": "Сообщений пока нет.",
+      "send": "Отправить",
+      "type_your_message": "Введите сообщение...",
+      "show_chat": "Показать чат",
+      "hide_chat": "Скрыть чат",
+      "complaint": {
+        "created": "Жалоба была создана",
+        "updated_from": "Статус жалобы обновлен с \"{oldStatus}\" на \"{newStatus}\"",
+        "status": {
+          "open": "открыта",
+          "escalated": "эскалирована",
+          "in_progress": "в процессе",
+          "resolved": "решена",
+          "closed": "закрыта"
+        }
+      },
+      "status_change": {
+        "order_status_changed": "Статус заказа #{id} изменен с \"{oldStatus}\" на \"{newStatus}\""
+      }
     }
   }
 }

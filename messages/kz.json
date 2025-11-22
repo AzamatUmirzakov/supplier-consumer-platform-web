@@ -60,6 +60,10 @@
     "items": "тауарлар",
     "total": "Барлығы",
     "select_order_to_view_details": "Егжей-тегжейлі қарау үшін тапсырысты таңдаңыз",
+    "order_list": {
+      "order": "тапсырыс",
+      "orders": "тапсырыстар"
+    },
     "status": {
       "created": "Жасалды",
       "processing": "Өңделуде",
@@ -77,6 +81,29 @@
       "order_summary": "Тапсырыс қорытындысы",
       "created": "Жасалды",
       "last_updated": "Соңғы жаңарту"
+    },
+    "chat": {
+      "order_chat": "Тапсырыс чаты",
+      "loading_messages": "Хабарламалар жүктелуде...",
+      "no_messages_yet": "Әлі хабарламалар жоқ.",
+      "send": "Жіберу",
+      "type_your_message": "Хабарлама енгізіңіз...",
+      "show_chat": "Чатты көрсету",
+      "hide_chat": "Чатты жасыру",
+      "complaint": {
+        "created": "Шағым жасалды",
+        "updated_from": "Шағым мәртебесі \"{oldStatus}\" -дан \"{newStatus}\" -ға жаңартылды",
+        "status": {
+          "open": "ашық",
+          "escalated": "көтерілді",
+          "in_progress": "жұмыс істеп жатыр",
+          "resolved": "шешілді",
+          "closed": "бас тартылды"
+        }
+      },
+      "status_change": {
+        "order_status_changed": "Тапсырыс #{id} мәртебесі \"{oldStatus}\" -дан \"{newStatus}\" -ға өзгертілді"
+      }
     }
   }
 }
