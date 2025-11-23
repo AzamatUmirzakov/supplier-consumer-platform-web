@@ -344,7 +344,7 @@ function ComplaintsPage() {
                   {/* Actions */}
                   {storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
                     (isStaff && storeSelectedComplaint.status !== "escalated" && !storeSelectedComplaint.claimed_by_user_id) ||
-                    ((isManager || isOwner) && storeSelectedComplaint.status === "escalated")
+                    ((isManager || isOwner) && (storeSelectedComplaint.status === "escalated" || (storeSelectedComplaint.escalated_to_manager_id === user?.user_id || storeSelectedComplaint.escalated_to_owner_id === user?.user_id)))
                   ) && (
                       <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
                         <h3 className="text-lg font-semibold text-white mb-4">{t("actions.title")}</h3>
@@ -360,10 +360,10 @@ function ComplaintsPage() {
                           )}
 
                           {/* Manager/Owner can only interact with escalated complaints */}
-                          {(isManager || isOwner) && storeSelectedComplaint.status === "escalated" && (
+                          {(isManager || isOwner) && (
                             <>
-                              {/* Show claim button if unclaimed */}
-                              {!storeSelectedComplaint.claimed_by_user_id && (
+                              {/* Show claim button if escalated but unclaimed */}
+                              {storeSelectedComplaint.status === "escalated" && !storeSelectedComplaint.escalated_to_manager_id && !storeSelectedComplaint.escalated_to_owner_id && (
                                 <button
                                   onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
                                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
@@ -372,8 +372,8 @@ function ComplaintsPage() {
                                 </button>
                               )}
 
-                              {/* Show resolve and close buttons only if claimed */}
-                              {storeSelectedComplaint.claimed_by_user_id && (
+                              {/* Show resolve and close buttons only if claimed by current user */}
+                              {(storeSelectedComplaint.escalated_to_manager_id === user?.user_id || storeSelectedComplaint.escalated_to_owner_id === user?.user_id) && (
                                 <>
                                   <button
                                     onClick={() => setShowResolveModal(true)}
