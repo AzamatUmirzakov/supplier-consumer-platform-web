@@ -130,6 +130,66 @@ export const createChatWebSocket = (
   return ws;
 };
 
+// Upload a file and get S3 URL
+export const uploadChatFile = async (file: File): Promise<string | null> => {
+  try {
+    // Step 1: Get the S3 upload URL
+    const fileExtension = file.name.split(".").pop() || "bin";
+    const uploadUrlResponse = await apiFetch(
+      `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
+      {
+        method: "GET",
+        headers: {},
+      }
+    );
+
+    if (!uploadUrlResponse.ok) {
+      let errorMessage = "Failed to get upload URL";
+      try {
+        const errorData = await uploadUrlResponse.json();
+        errorMessage = errorData.detail || errorData.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${uploadUrlResponse.status} ${uploadUrlResponse.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const uploadUrlData = await uploadUrlResponse.json();
+    console.log("Upload URL response:", uploadUrlData);
+
+    const s3PresignedUrl = uploadUrlData.put_url.url;
+    if (!s3PresignedUrl) {
+      throw new Error("No presigned URL received from server");
+    }
+
+    // Step 2: Upload the file to S3
+    const { url, fields } = uploadUrlData.put_url;
+    const formData = new FormData();
+    Object.entries(fields).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    formData.append("file", file);
+    console.log("Uploading file to S3 with fields:", fields);
+
+    const uploadResponse = await fetch(s3PresignedUrl, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Failed to upload file to S3: ${uploadResponse.status}`);
+    }
+
+    // Step 3: Return the final S3 URL
+    const finalUrl = uploadUrlData.finalurl;
+    console.log("File uploaded successfully:", finalUrl);
+    return finalUrl;
+  } catch (error) {
+    console.error("Failed to upload file:", error);
+    return null;
+  }
+};
+
 // Send a message through WebSocket
 export const sendChatMessage = (
   ws: WebSocket,

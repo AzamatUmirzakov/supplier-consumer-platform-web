@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useLinkingsStore, LinkingStatus, fetchCompanyDetails, CompanyDetails, Linking } from "@/lib/linkings-store";
-import { fetchChatMessages, createChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage, StatusChangeEvent } from "@/lib/chat-api";
+import { fetchChatMessages, createChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage, StatusChangeEvent, uploadChatFile } from "@/lib/chat-api";
 import { useCompanyStore } from "@/lib/company-store";
 import useAuthStore from "@/lib/useAuthStore";
 
@@ -23,8 +23,10 @@ function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Determine if we're a supplier or consumer
   const isSupplier = myCompany.company_type === "supplier";
@@ -212,6 +214,55 @@ function ChatPage() {
     setMessageInput("");
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !wsRef.current) return;
+
+    setIsUploadingFile(true);
+    try {
+      // Upload file and get S3 URL
+      const fileUrl = await uploadChatFile(file);
+
+      if (fileUrl) {
+        // Create message body with URL and filename as JSON
+        const fileMessage = JSON.stringify({
+          url: fileUrl,
+          filename: file.name
+        });
+
+        // Send file message with URL and filename
+        sendChatMessage(wsRef.current, fileMessage, "file");
+
+        // Add optimistic message to UI
+        const optimisticMessage: Message = {
+          message_id: Date.now(),
+          sender_id: user?.user_id || 0,
+          sender_name: user ? `${user.first_name} ${user.last_name}` : "You",
+          body: fileMessage,
+          type: "file",
+          sent_at: new Date().toISOString(),
+        };
+        setMessages((prev) => {
+          const updated = [...prev, optimisticMessage];
+          return updated.sort((a, b) =>
+            new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+          );
+        });
+      } else {
+        alert("Failed to upload file");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file");
+    } finally {
+      setIsUploadingFile(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const formatMessageTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString("en-US", {
@@ -325,6 +376,24 @@ function ChatPage() {
               ) : (
                 messages.map((message) => {
                   const isMyMessage = message.sender_id === user?.user_id;
+                  const isFileMessage = message.type === "file";
+
+                  // Parse file message to extract URL and filename
+                  let fileUrl = message.body;
+                  let fileName = 'file';
+
+                  if (isFileMessage) {
+                    try {
+                      const fileData = JSON.parse(message.body);
+                      fileUrl = fileData.url;
+                      fileName = fileData.filename;
+                    } catch {
+                      // Fallback for old format (just URL)
+                      fileUrl = message.body;
+                      fileName = message.body.split('/').pop() || 'file';
+                    }
+                  }
+
                   return (
                     <div
                       key={message.message_id}
@@ -341,7 +410,21 @@ function ChatPage() {
                             {message.sender_name}
                           </p>
                         )}
-                        <p className="text-sm">{message.body}</p>
+                        {isFileMessage ? (
+                          <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm hover:underline"
+                          >
+                            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="break-all">{fileName}</span>
+                          </a>
+                        ) : (
+                          <p className="text-sm">{message.body}</p>
+                        )}
                         <p
                           className={`text-xs mt-1 ${isMyMessage ? "text-blue-200" : "text-gray-500"
                             }`}
@@ -360,6 +443,29 @@ function ChatPage() {
             <div className="p-4 bg-[#1a1a1a] border-t border-gray-800">
               <div className="flex gap-2">
                 <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingFile}
+                  className="px-4 py-3 bg-[#2a2a2a] border border-gray-700 text-white rounded-lg hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Attach file"
+                >
+                  {isUploadingFile ? (
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                  )}
+                </button>
+                <input
                   type="text"
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
@@ -369,7 +475,8 @@ function ChatPage() {
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  disabled={isUploadingFile}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Send
                 </button>
