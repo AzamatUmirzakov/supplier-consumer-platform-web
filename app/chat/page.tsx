@@ -20,7 +20,8 @@ function ChatPage() {
   const user = useAuthStore((state) => state.user);
   const myCompany = useCompanyStore((state) => state.company);
   const getCompanyDetails = useCompanyStore((state) => state.getCompanyDetails);
-  const t = useTranslations("Orders");
+  const tChat = useTranslations("Chat");
+  const tOrders = useTranslations("Orders");
   const [selectedLinkingId, setSelectedLinkingId] = useState<number | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
@@ -270,11 +271,11 @@ function ChatPage() {
           );
         });
       } else {
-        alert(t("chat.failed_upload"));
+        alert(tOrders("chat.failed_upload"));
       }
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert(t("chat.failed_upload"));
+      alert(tOrders("chat.failed_upload"));
     } finally {
       setIsUploadingFile(false);
       // Reset file inputs
@@ -302,13 +303,13 @@ function ChatPage() {
       <div className="w-80 bg-[#1a1a1a] border-r border-gray-800 flex flex-col">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-800">
-          <h2 className="text-xl font-semibold text-white">Messages</h2>
+          <h2 className="text-xl font-semibold text-white">{tChat("title")}</h2>
           <div className="mt-3">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations..."
+              placeholder={tChat("search_placeholder")}
               className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
             />
           </div>
@@ -318,7 +319,7 @@ function ChatPage() {
         <div className="flex-1 overflow-y-auto">
           {chatCompanies.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              {searchQuery ? "No chats found" : "No chats"}
+              {searchQuery ? tChat("no_chats_found") : tChat("no_chats")}
             </div>
           ) : (
             chatCompanies.map((company) => (
@@ -330,7 +331,7 @@ function ChatPage() {
                   : "hover:bg-[#1f1f1f]"
                   }`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-3">
                   {/* Avatar */}
                   {company.logo_url ? (
                     <img
@@ -349,9 +350,6 @@ function ChatPage() {
                     <h3 className="font-semibold text-white truncate">
                       {company.name}
                     </h3>
-                    <p className="text-sm text-gray-400 truncate">
-                      Click to start chatting
-                    </p>
                   </div>
                 </div>
               </div>
@@ -382,7 +380,6 @@ function ChatPage() {
                   <h3 className="font-semibold text-white">
                     {selectedCompany.name}
                   </h3>
-                  <p className="text-xs text-green-500">● Online</p>
                 </div>
               </div>
             </div>
@@ -391,11 +388,11 @@ function ChatPage() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">Loading messages...</p>
+                  <p className="text-gray-500">{tOrders("chat.loading_messages")}</p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">No messages yet. Start the conversation!</p>
+                  <p className="text-gray-500">{tOrders("chat.start_conversation")}</p>
                 </div>
               ) : (
                 <PhotoProvider>
@@ -510,7 +507,7 @@ function ChatPage() {
                     onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
                     disabled={isUploadingFile}
                     className="cursor-pointer px-4 py-3 bg-[#2a2a2a] border border-gray-700 text-white rounded-lg hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={t("chat.attach_file_or_image")}
+                    title={tOrders("chat.attach_file_or_image")}
                   >
                     {isUploadingFile ? (
                       <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -537,7 +534,7 @@ function ChatPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <span className="text-sm">{t("chat.image")}</span>
+                        <span className="text-sm">{tOrders("chat.image")}</span>
                       </button>
                       <button
                         onClick={() => {
@@ -549,7 +546,7 @@ function ChatPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="text-sm">{t("chat.file")}</span>
+                        <span className="text-sm">{tOrders("chat.file")}</span>
                       </button>
                     </div>
                   )}
@@ -560,7 +557,7 @@ function ChatPage() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder={t("chat.type_your_message")}
+                  placeholder={tOrders("chat.type_your_message")}
                   className="flex-1 px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
                 />
                 <button
@@ -568,7 +565,7 @@ function ChatPage() {
                   disabled={isUploadingFile}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t("chat.send")}
+                  {tOrders("chat.send")}
                 </button>
               </div>
             </div>
@@ -589,7 +586,7 @@ function ChatPage() {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 />
               </svg>
-              <p className="text-lg">Select a conversation to start messaging</p>
+              <p className="text-lg">{tChat("select_conversation")}</p>
             </div>
           </div>
         )}

@@ -72,6 +72,13 @@
     "failed_stop": "Failed to stop linking.",
     "failed_fetch_company": "Failed to fetch company information."
   },
+  "Chat": {
+    "title": "Messages",
+    "search_placeholder": "Search conversations...",
+    "no_chats_found": "No chats found",
+    "no_chats": "No chats",
+    "select_conversation": "Select a conversation to start messaging"
+  },
   "Orders": {
     "title": "Orders",
     "total_orders": "total orders",
@@ -106,6 +113,7 @@
       "order_chat": "Order Chat",
       "loading_messages": "Loading messages...",
       "no_messages_yet": "No messages yet.",
+      "start_conversation": "No messages yet. Start the conversation!",
       "send": "Send",
       "type_your_message": "Type a message...",
       "show_chat": "Show Chat",

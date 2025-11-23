@@ -72,6 +72,13 @@
     "failed_stop": "Не удалось остановить связь.",
     "failed_fetch_company": "Не удалось получить информацию о компании."
   },
+  "Chat": {
+    "title": "Сообщения",
+    "search_placeholder": "Поиск разговоров...",
+    "no_chats_found": "Чаты не найдены",
+    "no_chats": "Нет чатов",
+    "select_conversation": "Выберите разговор, чтобы начать общение"
+  },
   "Orders": {
     "title": "Заказы",
     "total_orders": "всего заказов",
@@ -106,6 +113,7 @@
       "order_chat": "Чат заказа",
       "loading_messages": "Загрузка сообщений...",
       "no_messages_yet": "Сообщений пока нет.",
+      "start_conversation": "Сообщений пока нет. Начните разговор!",
       "send": "Отправить",
       "type_your_message": "Введите сообщение...",
       "show_chat": "Показать чат",
