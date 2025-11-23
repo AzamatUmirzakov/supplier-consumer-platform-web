@@ -28,10 +28,11 @@ function LinkingsPage() {
     getCompanyDetails(); // Fetch our own company details
   }, [fetchLinkings, fetchCities, getCompanyDetails]);
 
-  // Helper function to get city name by ID
+  // Helper function to get city name by ID (localized)
   const getCityName = (cityId: string | number) => {
     const city = cities.find((c) => c.city_id === Number(cityId));
-    return city ? city.city_name : `City #${cityId}`;
+    if (!city) return `${cityId}`;
+    return city?.city_name
   };
 
   useEffect(() => {

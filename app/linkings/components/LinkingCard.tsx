@@ -58,7 +58,7 @@ export default function LinkingCard({
           </h3>
           {companyDetails?.location && (
             <p className="text-sm text-gray-400 mb-2">
-              📍 {getCityName(companyDetails.location)}
+              {getCityName(companyDetails.location)}
             </p>
           )}
           {companyDetails?.description && (

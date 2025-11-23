@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import FormContainer from "../components/FormContainer";
 import useAuthStore from "@/lib/useAuthStore";
 import { useCitiesStore } from "@/lib/cities-store";
+import { useTranslations } from "next-intl";
 
 type CompanyType = "supplier" | "consumer";
 
@@ -13,6 +14,7 @@ const RegisterPage = () => {
   const loading = useAuthStore((state) => state.loading);
   const error = useAuthStore((state) => state.error);
   const uploadPhotos = useAuthStore((state) => state.uploadPhotos);
+  const t = useTranslations("Auth");
 
   const cities = useCitiesStore((state) => state.cities);
   const fetchCities = useCitiesStore((state) => state.fetchCities);
@@ -98,7 +100,7 @@ const RegisterPage = () => {
 
   return (
     <FormContainer>
-      <h1 className="text-2xl font-bold mb-2">Register</h1>
+      <h1 className="text-2xl font-bold mb-2">{t("register")}</h1>
       {error && (
         <div className="mb-4 p-3 rounded bg-red-900/30 border border-red-500 text-red-400 text-sm">
           {error}
@@ -107,7 +109,7 @@ const RegisterPage = () => {
       <form onSubmit={handleSubmit}>
         {formState === 1 && (
           <div>
-            <label className="block text-sm font-medium mb-2">Company Type</label>
+            <label className="block text-sm font-medium mb-2">{t("company_type")}</label>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -117,7 +119,7 @@ const RegisterPage = () => {
                   : "text-white border-gray-300 hover:border-white"
                   }`}
               >
-                Supplier Company
+                {t("supplier_company")}
               </button>
               <button
                 type="button"
@@ -127,7 +129,7 @@ const RegisterPage = () => {
                   : "text-white border-gray-300 hover:border-white"
                   }`}
               >
-                Consumer Company
+                {t("consumer_company")}
               </button>
             </div>
           </div>
@@ -138,7 +140,7 @@ const RegisterPage = () => {
               <input
                 id="companyName"
                 name="companyName"
-                placeholder="Company Name"
+                placeholder={t("company_name")}
                 type="text"
                 required
                 value={formData.companyName}
@@ -150,7 +152,7 @@ const RegisterPage = () => {
               <input type="text"
                 id="companyDescription"
                 name="companyDescription"
-                placeholder="Company Description"
+                placeholder={t("company_description")}
                 required
                 value={formData.companyDescription}
                 onChange={handleInputChange}
@@ -175,7 +177,7 @@ const RegisterPage = () => {
                 }}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm  text-white"
               >
-                <option value="">Select a city</option>
+                <option value="">{t("select_city")}</option>
                 {cities.map((city) => (
                   <option key={city.city_id} value={String(city.city_id)}>
                     {city.city_name}
@@ -199,10 +201,10 @@ const RegisterPage = () => {
                 htmlFor="companyPhoto"
                 className="block w-full text-center cursor-pointer py-3 px-4 rounded-lg border-2 border-gray-300 text-white font-medium transition-all hover:border-white hover:bg-gray-800"
               >
-                Upload Company Photo
+                {t("upload_company_photo")}
               </label>
               {companyPhotoName && (
-                <p className="mt-1 text-sm text-gray-300">Selected: {companyPhotoName}</p>
+                <p className="mt-1 text-sm text-gray-300">{t("selected", { filename: companyPhotoName })}</p>
               )}
             </div>
           </div>
@@ -213,7 +215,7 @@ const RegisterPage = () => {
               <input
                 id="email"
                 name="email"
-                placeholder="Email"
+                placeholder={t("email")}
                 type="email"
                 autoComplete="email"
                 required
@@ -228,7 +230,7 @@ const RegisterPage = () => {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Password"
+                placeholder={t("password")}
                 autoComplete="current-password"
                 required
                 value={formData.password}
@@ -244,7 +246,7 @@ const RegisterPage = () => {
               <input
                 id="ownerFirstName"
                 name="ownerFirstName"
-                placeholder="Owner First Name"
+                placeholder={t("owner_first_name")}
                 type="text"
                 required
                 value={formData.ownerFirstName}
@@ -256,7 +258,7 @@ const RegisterPage = () => {
               <input
                 id="ownerLastName"
                 name="ownerLastName"
-                placeholder="Owner Last Name"
+                placeholder={t("owner_last_name")}
                 type="text"
                 required
                 value={formData.ownerLastName}
@@ -268,7 +270,7 @@ const RegisterPage = () => {
               <input
                 id="ownerNumber"
                 name="ownerNumber"
-                placeholder="Owner Phone Number"
+                placeholder={t("owner_phone")}
                 type="tel"
                 required
                 value={formData.ownerNumber}
@@ -280,7 +282,7 @@ const RegisterPage = () => {
               <input
                 id="ownerEmail"
                 name="ownerEmail"
-                placeholder="Owner Email"
+                placeholder={t("owner_email")}
                 type="email"
                 autoComplete="email"
                 required
@@ -316,19 +318,19 @@ const RegisterPage = () => {
         <div className="mt-3.5 flex gap-2 justify-stretch">
           {formState > 1 && (
             <button onClick={handlePrevious} type="button" className="flex-1 py-3 px-4 rounded-lg bg-gray-300 text-black font-medium transition-all hover:bg-white cursor-pointer">
-              Previous
+              {t("previous")}
             </button>
           )}
           {formState < 4 && (
             <button onClick={handleNext} type="button" className="flex-1 py-3 px-4 rounded-lg bg-gray-300 text-black font-medium transition-all hover:bg-white cursor-pointer">
-              Next
+              {t("next")}
             </button>
           )}
         </div>
         {formState == 4 && (
           <div className="mt-3.5">
             <button type="submit" disabled={loading} className="w-full py-3 px-4 rounded-lg bg-white text-black font-medium transition-all hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              {loading ? "Registering..." : "Register"}
+              {loading ? t("registering") : t("register")}
             </button>
           </div>
         )}

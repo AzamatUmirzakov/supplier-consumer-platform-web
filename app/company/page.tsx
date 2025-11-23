@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { User } from "@/lib/constants";
 import AddUserSideSheet from "./components/AddUserSideSheet";
 import EditUserSideSheet from "./components/EditUserSideSheet";
+import { useTranslations } from "next-intl";
 
 function CompanyPage() {
   const { company, users, loading, error, getCompanyDetails, fetchUsers, addUser, updateUser, deleteUser, updateCompany } = useCompanyStore();
@@ -14,6 +15,7 @@ function CompanyPage() {
   const cities = useCitiesStore(state => state.cities);
   const fetchCities = useCitiesStore(state => state.fetchCities);
   const city = cities.find(city => String(city.city_id) === company.location);
+  const t = useTranslations("Company");
 
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
@@ -68,8 +70,8 @@ function CompanyPage() {
   if (loading && !company.company_id) {
     return (
       <div className="py-5 px-10 flex-1">
-        <h1 className="text-4xl font-bold mb-6">Company</h1>
-        <p className="text-gray-400">Loading company information...</p>
+        <h1 className="text-4xl font-bold mb-6">{t("title")}</h1>
+        <p className="text-gray-400">{t("loading")}</p>
       </div>
     );
   }
@@ -77,15 +79,15 @@ function CompanyPage() {
   if (error) {
     return (
       <div className="py-5 px-10 flex-1">
-        <h1 className="text-4xl font-bold mb-6">Company</h1>
-        <p className="text-red-500">Error: {error}</p>
+        <h1 className="text-4xl font-bold mb-6">{t("title")}</h1>
+        <p className="text-red-500">{t("error", { error })}</p>
       </div>
     );
   }
 
   return (
     <div className="py-5 px-10 flex-1">
-      <h1 className="text-4xl font-bold mb-6">Company</h1>
+      <h1 className="text-4xl font-bold mb-6">{t("title")}</h1>
 
       {/* Company Information Section */}
       <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-6 mb-8">
@@ -103,7 +105,9 @@ function CompanyPage() {
             </div>
           ) : (
             <div className="shrink-0 w-[120px] h-[120px] bg-gray-800 rounded-lg flex items-center justify-center">
-              <span className="text-4xl text-gray-600">🏢</span>
+              <svg className="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
           )}
 
@@ -118,7 +122,7 @@ function CompanyPage() {
                       onClick={() => setIsEditingCompany(true)}
                       className="cursor-pointer px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
-                      Edit
+                      {t("edit")}
                     </button>
                   )}
                 </div>
@@ -129,20 +133,20 @@ function CompanyPage() {
                 )}
                 <div className="space-y-2">
                   <div>
-                    <span className="text-gray-400 text-sm">Location: </span>
+                    <span className="text-gray-400 text-sm">{t("location")}: </span>
                     <span className="text-white">{city?.city_name || company.location}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 text-sm">Status: </span>
+                    <span className="text-gray-400 text-sm">{t("status")}: </span>
                     <span className={`px-2 py-1 rounded text-sm capitalize ${company.status === 'active' ? 'bg-green-900 text-green-200' :
                       company.status === 'suspended' ? 'bg-red-900 text-red-200' :
                         'bg-gray-700 text-gray-300'
                       }`}>
-                      {company.status}
+                      {company.status === 'active' ? t("status_active") : company.status === 'suspended' ? t("status_suspended") : company.status}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-400 text-sm">Company ID: </span>
+                    <span className="text-gray-400 text-sm">{t("company_id")}: </span>
                     <span className="text-gray-500">{company.company_id}</span>
                   </div>
                 </div>
@@ -152,7 +156,7 @@ function CompanyPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Company Name
+                      {t("company_name")}
                     </label>
                     <input
                       type="text"
@@ -163,7 +167,7 @@ function CompanyPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Description
+                      {t("description")}
                     </label>
                     <textarea
                       value={companyForm.description}
@@ -174,14 +178,14 @@ function CompanyPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Location
+                      {t("location")}
                     </label>
                     <select
                       value={companyForm.location}
                       onChange={(e) => setCompanyForm({ ...companyForm, location: e.target.value })}
                       className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
                     >
-                      <option value="">Select a city</option>
+                      <option value="">{t("select_city")}</option>
                       {cities.map((city) => (
                         <option key={city.city_id} value={String(city.city_id)}>
                           {city.city_name}
@@ -191,15 +195,15 @@ function CompanyPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Status
+                      {t("status")}
                     </label>
                     <select
                       value={companyForm.status}
                       onChange={(e) => setCompanyForm({ ...companyForm, status: e.target.value })}
                       className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
                     >
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspended</option>
+                      <option value="active">{t("status_active")}</option>
+                      <option value="suspended">{t("status_suspended")}</option>
                     </select>
                   </div>
                   <div className="flex gap-2 pt-2">
@@ -207,13 +211,13 @@ function CompanyPage() {
                       onClick={handleSaveCompany}
                       className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium"
                     >
-                      Save
+                      {t("save")}
                     </button>
                     <button
                       onClick={handleCancelEdit}
                       className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors font-medium"
                     >
-                      Cancel
+                      {t("cancel")}
                     </button>
                   </div>
                 </div>
@@ -226,30 +230,30 @@ function CompanyPage() {
       {/* Staff Section */}
       <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-white">Staff Members</h2>
+          <h2 className="text-2xl font-bold text-white">{t("staff_title")}</h2>
           <button
             onClick={() => setIsAddSheetOpen(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
           >
             <span className="text-xl">+</span>
-            Add User
+            {t("add_user")}
           </button>
         </div>
 
         {loading && users.length === 0 ? (
-          <p className="text-gray-400">Loading staff...</p>
+          <p className="text-gray-400">{t("loading_staff")}</p>
         ) : users.length === 0 ? (
-          <p className="text-gray-400">No staff members found.</p>
+          <p className="text-gray-400">{t("no_staff")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#4a4a4a]">
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Name</th>
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Email</th>
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Phone</th>
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Role</th>
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Status</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">{t("table.name")}</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">{t("table.email")}</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">{t("table.phone")}</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">{t("table.role")}</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">{t("table.status")}</th>
                 </tr>
               </thead>
               <tbody>
