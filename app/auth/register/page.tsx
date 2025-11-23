@@ -6,8 +6,6 @@ import useAuthStore from "@/lib/useAuthStore";
 import { useCitiesStore } from "@/lib/cities-store";
 import { useTranslations } from "next-intl";
 
-type CompanyType = "supplier" | "consumer";
-
 const RegisterPage = () => {
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
@@ -19,7 +17,6 @@ const RegisterPage = () => {
   const cities = useCitiesStore((state) => state.cities);
   const fetchCities = useCitiesStore((state) => state.fetchCities);
 
-  const [companyType, setCompanyType] = useState<CompanyType | null>(null);
   const [formState, setFormState] = useState(1);
   const [companyPhotoName, setCompanyPhotoName] = useState<string>("");
   const [ownerPhotoName, setOwnerPhotoName] = useState<string>("");
@@ -46,11 +43,9 @@ const RegisterPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  }; const handleNext = () => {
-    if (companyType === null && formState === 1) {
-      alert("Please select a company type to proceed.");
-      return;
-    }
+  };
+
+  const handleNext = () => {
     setFormState(formState + 1);
   }
 
@@ -68,7 +63,7 @@ const RegisterPage = () => {
           name: formData.companyName,
           description: formData.companyDescription,
           location: formData.companyLocation,
-          company_type: companyType!,
+          company_type: "supplier",
         },
         user: {
           first_name: formData.ownerFirstName,
@@ -80,15 +75,6 @@ const RegisterPage = () => {
           locale: "en",
         },
       });
-
-      // Collect files to upload
-      // const filesToUpload = [companyPhotoFile, ownerPhotoFile].filter(Boolean) as File[];
-      // let uploadedUrls: string[] = [];
-
-      // // Upload files if any are provided
-      // if (filesToUpload.length > 0) {
-      //   uploadedUrls = await uploadPhotos(filesToUpload);
-      // }
 
       await uploadPhotos([companyPhotoFile].filter(Boolean) as File[]);
 
@@ -108,33 +94,6 @@ const RegisterPage = () => {
       )}
       <form onSubmit={handleSubmit}>
         {formState === 1 && (
-          <div>
-            <label className="block text-sm font-medium mb-2">{t("company_type")}</label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setCompanyType("supplier")}
-                className={`flex-1 cursor-pointer py-3 px-4 rounded-lg border-2 font-medium transition-all ${companyType === "supplier"
-                  ? "bg-white text-black border-white"
-                  : "text-white border-gray-300 hover:border-white"
-                  }`}
-              >
-                {t("supplier_company")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setCompanyType("consumer")}
-                className={`flex-1 cursor-pointer py-3 px-4 rounded-lg border-2 font-medium transition-all ${companyType === "consumer"
-                  ? "bg-white text-black border-white"
-                  : "text-white border-gray-300 hover:border-white"
-                  }`}
-              >
-                {t("consumer_company")}
-              </button>
-            </div>
-          </div>
-        )}
-        {formState === 2 && (
           <div>
             <div className="mt-2">
               <input
@@ -209,7 +168,7 @@ const RegisterPage = () => {
             </div>
           </div>
         )}
-        {formState === 3 && (
+        {formState === 2 && (
           <div>
             <div className="mt-2">
               <input
@@ -240,7 +199,7 @@ const RegisterPage = () => {
             </div>
           </div>
         )}
-        {formState === 4 && (
+        {formState === 3 && (
           <div>
             <div className="mt-2">
               <input
@@ -291,28 +250,6 @@ const RegisterPage = () => {
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
-            {/* <div className="mt-2">
-              <input
-                type="file"
-                name="ownerPhoto"
-                id="ownerPhoto"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  setOwnerPhotoName(e.target.files?.[0]?.name || "");
-                  setOwnerPhotoFile(e.target.files?.[0] || null);
-                }}
-              />
-              <label
-                htmlFor="ownerPhoto"
-                className="block w-full text-center cursor-pointer py-3 px-4 rounded-lg border-2 border-gray-300 text-white font-medium transition-all hover:border-white hover:bg-gray-800"
-              >
-                Upload Owner Photo
-              </label>
-              {ownerPhotoName && (
-                <p className="mt-1 text-sm text-gray-300">Selected: {ownerPhotoName}</p>
-              )}
-            </div> */}
           </div>
         )}
         <div className="mt-3.5 flex gap-2 justify-stretch">
@@ -321,13 +258,13 @@ const RegisterPage = () => {
               {t("previous")}
             </button>
           )}
-          {formState < 4 && (
+          {formState < 3 && (
             <button onClick={handleNext} type="button" className="flex-1 py-3 px-4 rounded-lg bg-gray-300 text-black font-medium transition-all hover:bg-white cursor-pointer">
               {t("next")}
             </button>
           )}
         </div>
-        {formState == 4 && (
+        {formState == 3 && (
           <div className="mt-3.5">
             <button type="submit" disabled={loading} className="w-full py-3 px-4 rounded-lg bg-white text-black font-medium transition-all hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
               {loading ? t("registering") : t("register")}

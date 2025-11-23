@@ -19,9 +19,6 @@ function LinkingsPage() {
 
   const t = useTranslations("Linkings");
 
-  // Determine if we're a supplier or consumer
-  const isSupplier = myCompany.company_type === "supplier";
-
   useEffect(() => {
     fetchLinkings();
     fetchCities();
@@ -128,10 +125,8 @@ function LinkingsPage() {
             </div>
           ) : (
             pendingLinkings.map((linking) => {
-              // If we're a supplier, show consumer company. If we're a consumer, show supplier company.
-              const otherCompanyId = isSupplier
-                ? linking.consumer_company_id
-                : linking.supplier_company_id;
+              // Show consumer company
+              const otherCompanyId = linking.consumer_company_id;
               return (
                 <LinkingCard
                   key={linking.linking_id}
@@ -157,10 +152,8 @@ function LinkingsPage() {
             </div>
           ) : (
             activeLinkings.map((linking) => {
-              // If we're a supplier, show consumer company. If we're a consumer, show supplier company.
-              const otherCompanyId = isSupplier
-                ? linking.consumer_company_id
-                : linking.supplier_company_id;
+              // Show consumer company
+              const otherCompanyId = linking.consumer_company_id;
               return (
                 <LinkingCard
                   key={linking.linking_id}

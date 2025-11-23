@@ -38,9 +38,6 @@ function ChatPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
 
-  // Determine if we're a supplier or consumer
-  const isSupplier = myCompany.company_type === "supplier";
-
   useEffect(() => {
     fetchLinkings();
     getCompanyDetails(); // Fetch our own company details
@@ -54,8 +51,8 @@ function ChatPage() {
 
   useEffect(() => {
     activeLinkings.forEach(async (linking) => {
-      // Fetch the other company's details based on our company type
-      const otherCompanyId = isSupplier ? linking.consumer_company_id : linking.supplier_company_id;
+      // Fetch the consumer company's details
+      const otherCompanyId = linking.consumer_company_id;
       if (!companiesDetails.has(otherCompanyId)) {
         const data = await fetchCompanyDetails(otherCompanyId);
         if (data) {
@@ -64,13 +61,13 @@ function ChatPage() {
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLinkings, isSupplier]);
+  }, [activeLinkings]);
 
   // Create chat list from active linkings
   const chatCompanies: ChatCompany[] = activeLinkings
     .map((linking) => {
-      // Get the other company based on our type
-      const otherCompanyId = isSupplier ? linking.consumer_company_id : linking.supplier_company_id;
+      // Get the consumer company
+      const otherCompanyId = linking.consumer_company_id;
       const company = companiesDetails.get(otherCompanyId);
       if (!company) return null;
       return {
@@ -87,7 +84,7 @@ function ChatPage() {
 
   const selectedLinking = activeLinkings.find((l) => l.linking_id === selectedLinkingId);
   const selectedCompany = selectedLinking
-    ? companiesDetails.get(isSupplier ? selectedLinking.consumer_company_id : selectedLinking.supplier_company_id)
+    ? companiesDetails.get(selectedLinking.consumer_company_id)
     : null;
 
   const getInitials = (name: string) => {

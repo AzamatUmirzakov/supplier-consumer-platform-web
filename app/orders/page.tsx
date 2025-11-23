@@ -46,9 +46,6 @@ function OrdersPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
 
-  // Determine if we're a supplier or consumer
-  const isSupplier = myCompany.company_type === "supplier";
-
   useEffect(() => {
     fetchOrders();
     fetchLinkings();
@@ -61,7 +58,7 @@ function OrdersPage() {
   // Fetch company details for all active linkings
   useEffect(() => {
     activeLinkings.forEach(async (linking) => {
-      const otherCompanyId = isSupplier ? linking.consumer_company_id : linking.supplier_company_id;
+      const otherCompanyId = linking.consumer_company_id;
       if (!companiesDetails.has(otherCompanyId)) {
         const data = await fetchCompanyDetails(otherCompanyId);
         if (data) {
@@ -70,7 +67,7 @@ function OrdersPage() {
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLinkings, isSupplier]);
+  }, [activeLinkings]);
 
   const getInitials = (name: string) => {
     return name
@@ -489,7 +486,7 @@ function OrdersPage() {
           ) : (
             Array.from(ordersByLinking.entries()).map(([linkingId, orders]) => {
               const linking = activeLinkings.find((l) => l.linking_id === linkingId);
-              const otherCompanyId = isSupplier ? linking?.consumer_company_id : linking?.supplier_company_id;
+              const otherCompanyId = linking?.consumer_company_id;
               const companyDetails = otherCompanyId ? companiesDetails.get(otherCompanyId) : null;
               const companyName = companyDetails?.name || `Company #${otherCompanyId || linkingId}`;
 
