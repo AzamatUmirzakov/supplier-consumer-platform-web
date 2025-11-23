@@ -121,6 +121,9 @@
       "attach_file_or_image": "Attach file or image",
       "image": "Image",
       "file": "File",
+      "voice": "Voice Message",
+      "stop_recording": "Stop recording",
+      "microphone_error": "Could not access microphone. Please check permissions.",
       "failed_upload": "Failed to upload file",
       "complaint": {
         "created": "Complaint was created",

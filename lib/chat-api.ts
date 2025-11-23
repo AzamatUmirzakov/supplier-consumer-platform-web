@@ -2,7 +2,7 @@ import { API_BASE } from "./constants";
 import { useAuthStore } from "./useAuthStore";
 import { apiFetch } from "./api-fetch";
 
-export type MessageType = "text" | "image" | "file" | "order" | "complaint";
+export type MessageType = "text" | "image" | "file" | "audio" | "order" | "complaint";
 
 export type StatusChangeEvent = {
   event: "status_change";

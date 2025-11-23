@@ -42,6 +42,9 @@ function OrdersPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
 
   // Determine if we're a supplier or consumer
   const isSupplier = myCompany.company_type === "supplier";
@@ -221,6 +224,83 @@ function OrdersPage() {
 
     sendChatMessage(wsRef.current, messageInput);
     setMessageInput("");
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await handleAudioUpload(audioBlob);
+
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      alert(t("chat.microphone_error"));
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleAudioUpload = async (audioBlob: Blob) => {
+    if (!wsRef.current) return;
+
+    setIsUploadingFile(true);
+    try {
+      // Create a File object from the Blob
+      const audioFile = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+
+      // Upload file and get S3 URL
+      const audioUrl = await uploadChatFile(audioFile);
+
+      if (audioUrl) {
+        // Send message with audio type
+        sendChatMessage(wsRef.current, audioUrl, "audio");
+
+        // Add optimistic message to UI
+        const optimisticMessage: Message = {
+          message_id: Date.now(),
+          sender_id: user?.user_id || 0,
+          sender_name: user ? `${user.first_name} ${user.last_name}` : "You",
+          body: audioUrl,
+          type: "audio",
+          sent_at: new Date().toISOString(),
+        };
+        setMessages((prev) => {
+          const updated = [...prev, optimisticMessage];
+          return updated.sort((a, b) =>
+            new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+          );
+        });
+      } else {
+        alert(t("chat.failed_upload"));
+      }
+    } catch (error) {
+      console.error("Error uploading audio:", error);
+      alert(t("chat.failed_upload"));
+    } finally {
+      setIsUploadingFile(false);
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, messageType: "file" | "image") => {
@@ -684,6 +764,7 @@ function OrdersPage() {
                         const isMyMessage = message.sender_id === user?.user_id;
                         const isFileMessage = message.type === "file";
                         const isImageMessage = message.type === "image";
+                        const isAudioMessage = message.type === "audio";
 
                         // Parse file message to extract URL and filename
                         let fileUrl = message.body;
@@ -721,6 +802,50 @@ function OrdersPage() {
                                   />
                                 </PhotoView>
                                 <p className="text-xs mt-1 text-gray-500">
+                                  {formatMessageTime(message.sent_at)}
+                                </p>
+                              </div>
+                            ) : isAudioMessage ? (
+                              <div className="max-w-sm">
+                                {!isMyMessage && message.sender_name && (
+                                  <p className="text-xs font-semibold mb-1 text-gray-300">
+                                    {message.sender_name}
+                                  </p>
+                                )}
+                                <div
+                                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl ${isMyMessage
+                                    ? "bg-blue-600"
+                                    : "bg-[#2a2a2a]"
+                                    }`}
+                                >
+                                  <svg
+                                    className={`w-6 h-6 shrink-0 ${isMyMessage ? "text-white" : "text-blue-400"}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                                    />
+                                  </svg>
+                                  <div className="flex-1 min-w-0">
+                                    <audio
+                                      controls
+                                      src={message.body}
+                                      className="w-full"
+                                      style={{
+                                        height: '36px',
+                                        filter: isMyMessage ? 'invert(1) brightness(2)' : 'invert(0.9)'
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <p
+                                  className={`text-xs mt-1 ${isMyMessage ? "text-gray-400" : "text-gray-500"}`}
+                                >
                                   {formatMessageTime(message.sent_at)}
                                 </p>
                               </div>
@@ -832,9 +957,34 @@ function OrdersPage() {
                             </svg>
                             <span className="text-sm">{t("chat.file")}</span>
                           </button>
+                          <button
+                            onClick={() => {
+                              startRecording();
+                              setShowAttachmentMenu(false);
+                            }}
+                            className="flex cursor-pointer items-center gap-3 px-4 py-3 w-full hover:bg-[#3a3a3a] text-white transition-colors border-t border-gray-700"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                            </svg>
+                            <span className="text-sm">{t("chat.voice")}</span>
+                          </button>
                         </div>
                       )}
                     </div>
+
+                    {/* Recording indicator */}
+                    {isRecording && (
+                      <button
+                        onClick={stopRecording}
+                        className="cursor-pointer px-4 py-2 bg-red-600 border border-red-700 text-white rounded-lg hover:bg-red-700 transition-colors animate-pulse"
+                        title={t("chat.stop_recording")}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="8" />
+                        </svg>
+                      </button>
+                    )}
 
                     <input
                       type="text"
