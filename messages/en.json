@@ -44,6 +44,7 @@
     "order_status": "Order Status",
     "recent_orders": "Recent Orders",
     "low_stock_alert": "Low Stock Alert",
+    "no_low_stock_items": "No low stock items",
     "stock": "Stock: {current} / {threshold}",
     "order_number": "Order #{id}",
     "status": {

@@ -340,7 +340,7 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-center py-4">No low stock items</p>
+                <p className="text-gray-400 text-center py-4">{t("no_low_stock_items")}</p>
               )}
             </div>
           </div>

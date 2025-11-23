@@ -43,9 +43,10 @@
     "revenue_trend": "Тенденция дохода",
     "order_status": "Статус заказов",
     "recent_orders": "Последние заказы",
-    "low_stock_alert": "Предупреждение о низком запасе",
+    "low_stock_alert": "Предупреждение о низких запасах",
+    "no_low_stock_items": "Нет товаров с низким запасом",
     "stock": "Запас: {current} / {threshold}",
-    "order_number": "Заказ №{id}",
+    "order_number": "Заказ #{id}",
     "status": {
       "created": "создан",
       "processing": "обрабатывается",
