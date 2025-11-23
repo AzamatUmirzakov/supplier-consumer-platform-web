@@ -110,6 +110,10 @@
       "type_your_message": "Хабарлама енгізіңіз...",
       "show_chat": "Чатты көрсету",
       "hide_chat": "Чатты жасыру",
+      "attach_file_or_image": "Файл немесе сурет тіркеу",
+      "image": "Сурет",
+      "file": "Файл",
+      "failed_upload": "Файлды жүктеу мүмкін болмады",
       "complaint": {
         "created": "Шағым жасалды",
         "updated_from": "Шағым мәртебесі \"{oldStatus}\" -дан \"{newStatus}\" -ға жаңартылды",

@@ -4,8 +4,10 @@ import { useOrdersStore, Order } from "@/lib/orders-store";
 import { useLinkingsStore, LinkingStatus, fetchCompanyDetails, CompanyDetails } from "@/lib/linkings-store";
 import { useCompanyStore } from "@/lib/company-store";
 import { useTranslations } from "next-intl";
-import { fetchOrderChatMessages, createOrderChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage } from "@/lib/chat-api";
+import { fetchOrderChatMessages, createOrderChatWebSocket, sendChatMessage, closeChatWebSocket, Message, WebSocketMessage, uploadChatFile } from "@/lib/chat-api";
 import useAuthStore from "@/lib/useAuthStore";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 
 type GroupedOrder = {
   order_id: number;
@@ -33,9 +35,13 @@ function OrdersPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [companiesDetails, setCompaniesDetails] = useState<Map<number, CompanyDetails>>(new Map());
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Determine if we're a supplier or consumer
   const isSupplier = myCompany.company_type === "supplier";
@@ -80,6 +86,18 @@ function OrdersPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Close attachment menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAttachmentMenu && !(event.target as Element).closest('.relative')) {
+        setShowAttachmentMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAttachmentMenu]);
 
   // Load order chat messages when chat is opened
   useEffect(() => {
@@ -203,6 +221,61 @@ function OrdersPage() {
 
     sendChatMessage(wsRef.current, messageInput);
     setMessageInput("");
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, messageType: "file" | "image") => {
+    const file = e.target.files?.[0];
+    if (!file || !wsRef.current) return;
+
+    setIsUploadingFile(true);
+    setShowAttachmentMenu(false);
+    try {
+      // Upload file and get S3 URL
+      const fileUrl = await uploadChatFile(file);
+
+      if (fileUrl) {
+        // For images, just send the URL; for files, send URL + filename as JSON
+        const messageBody = messageType === "image"
+          ? fileUrl
+          : JSON.stringify({
+            url: fileUrl,
+            filename: file.name
+          });
+
+        // Send message with appropriate type
+        sendChatMessage(wsRef.current, messageBody, messageType);
+
+        // Add optimistic message to UI
+        const optimisticMessage: Message = {
+          message_id: Date.now(),
+          sender_id: user?.user_id || 0,
+          sender_name: user ? `${user.first_name} ${user.last_name}` : "You",
+          body: messageBody,
+          type: messageType,
+          sent_at: new Date().toISOString(),
+        };
+        setMessages((prev) => {
+          const updated = [...prev, optimisticMessage];
+          return updated.sort((a, b) =>
+            new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+          );
+        });
+      } else {
+        alert(t("chat.failed_upload"));
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert(t("chat.failed_upload"));
+    } finally {
+      setIsUploadingFile(false);
+      // Reset file inputs
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
+    }
   };
 
   const formatMessageTime = (dateString: string) => {
@@ -589,59 +662,180 @@ function OrdersPage() {
                       </p>
                     </div>
                   ) : (
-                    messages.map((message) => {
-                      // Order and complaint status change messages are displayed as announcements
-                      if (message.type === "order" || message.type === "complaint") {
-                        return (
-                          <div key={message.message_id} className="flex justify-center my-4">
-                            <div className="max-w-lg px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
-                              <p className="text-sm text-gray-300 text-center">
-                                {formatStatusChange(message.event_data)}
-                              </p>
-                              <p className="text-xs text-gray-500 text-center mt-1">
-                                {formatMessageTime(message.sent_at)}
-                              </p>
+                    <PhotoProvider>
+                      {messages.map((message) => {
+                        // Order and complaint status change messages are displayed as announcements
+                        if (message.type === "order" || message.type === "complaint") {
+                          return (
+                            <div key={message.message_id} className="flex justify-center my-4">
+                              <div className="max-w-lg px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
+                                <p className="text-sm text-gray-300 text-center">
+                                  {formatStatusChange(message.event_data)}
+                                </p>
+                                <p className="text-xs text-gray-500 text-center mt-1">
+                                  {formatMessageTime(message.sent_at)}
+                                </p>
+                              </div>
                             </div>
+                          );
+                        }
+
+                        // Regular messages
+                        const isMyMessage = message.sender_id === user?.user_id;
+                        const isFileMessage = message.type === "file";
+                        const isImageMessage = message.type === "image";
+
+                        // Parse file message to extract URL and filename
+                        let fileUrl = message.body;
+                        let fileName = 'file';
+
+                        if (isFileMessage) {
+                          try {
+                            const fileData = JSON.parse(message.body);
+                            fileUrl = fileData.url;
+                            fileName = fileData.filename;
+                          } catch {
+                            // Fallback for old format (just URL)
+                            fileUrl = message.body;
+                            fileName = message.body.split('/').pop() || 'file';
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={message.message_id}
+                            className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
+                          >
+                            {isImageMessage ? (
+                              <div className="max-w-xs">
+                                {!isMyMessage && message.sender_name && (
+                                  <p className="text-xs font-semibold mb-1 text-gray-300">
+                                    {message.sender_name}
+                                  </p>
+                                )}
+                                <PhotoView src={message.body}>
+                                  <img
+                                    src={message.body}
+                                    alt="Shared image"
+                                    className="max-h-64 rounded-lg cursor-pointer"
+                                  />
+                                </PhotoView>
+                                <p className="text-xs mt-1 text-gray-500">
+                                  {formatMessageTime(message.sent_at)}
+                                </p>
+                              </div>
+                            ) : (
+                              <div
+                                className={`max-w-[70%] px-3 py-2 rounded-2xl wrap-break-word ${isMyMessage
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-[#2a2a2a] text-white"
+                                  }`}
+                              >
+                                {!isMyMessage && message.sender_name && (
+                                  <p className="text-xs font-semibold mb-1 text-gray-300">
+                                    {message.sender_name}
+                                  </p>
+                                )}
+                                {isFileMessage ? (
+                                  <a
+                                    href={fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm hover:underline"
+                                  >
+                                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span className="break-all">{fileName}</span>
+                                  </a>
+                                ) : (
+                                  <p className="text-sm wrap-break-word">{message.body}</p>
+                                )}
+                                <p
+                                  className={`text-xs mt-1 ${isMyMessage ? "text-blue-200" : "text-gray-500"
+                                    }`}
+                                >
+                                  {formatMessageTime(message.sent_at)}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         );
-                      }
-
-                      // Regular messages
-                      const isMyMessage = message.sender_id === user?.user_id;
-                      return (
-                        <div
-                          key={message.message_id}
-                          className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[70%] px-3 py-2 rounded-2xl ${isMyMessage
-                              ? "bg-blue-600 text-white"
-                              : "bg-[#2a2a2a] text-white"
-                              }`}
-                          >
-                            {!isMyMessage && message.sender_name && (
-                              <p className="text-xs font-semibold mb-1 text-gray-300">
-                                {message.sender_name}
-                              </p>
-                            )}
-                            <p className="text-sm">{message.body}</p>
-                            <p
-                              className={`text-xs mt-1 ${isMyMessage ? "text-blue-200" : "text-gray-500"
-                                }`}
-                            >
-                              {formatMessageTime(message.sent_at)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
+                      })}
+                    </PhotoProvider>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
 
                 {/* Message Input */}
                 <div className="p-4 border-t border-[#2a2a2a]">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 relative">
+                    {/* Hidden file inputs */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={(e) => handleFileSelect(e, "file")}
+                      className="hidden"
+                    />
+                    <input
+                      type="file"
+                      ref={imageInputRef}
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, "image")}
+                      className="hidden"
+                    />
+
+                    {/* Attachment button with dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                        disabled={isUploadingFile}
+                        className="cursor-pointer px-3 py-2 bg-[#2a2a2a] border border-gray-700 text-white rounded-lg hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={t("chat.attach_file_or_image")}
+                      >
+                        {isUploadingFile ? (
+                          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Attachment menu */}
+                      {showAttachmentMenu && (
+                        <div className="absolute bottom-full mb-2 left-0 bg-[#2a2a2a] border border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                          <button
+                            onClick={() => {
+                              imageInputRef.current?.click();
+                              setShowAttachmentMenu(false);
+                            }}
+                            className="flex cursor-pointer items-center gap-3 px-4 py-3 w-full hover:bg-[#3a3a3a] text-white transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm">{t("chat.image")}</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              fileInputRef.current?.click();
+                              setShowAttachmentMenu(false);
+                            }}
+                            className="flex cursor-pointer items-center gap-3 px-4 py-3 w-full hover:bg-[#3a3a3a] text-white transition-colors border-t border-gray-700"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="text-sm">{t("chat.file")}</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
                     <input
                       type="text"
                       value={messageInput}
@@ -652,7 +846,8 @@ function OrdersPage() {
                     />
                     <button
                       onClick={handleSendMessage}
-                      className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                      disabled={isUploadingFile}
+                      className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t("chat.send")}
                     </button>

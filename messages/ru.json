@@ -110,6 +110,10 @@
       "type_your_message": "Введите сообщение...",
       "show_chat": "Показать чат",
       "hide_chat": "Скрыть чат",
+      "attach_file_or_image": "Прикрепить файл или изображение",
+      "image": "Изображение",
+      "file": "Файл",
+      "failed_upload": "Не удалось загрузить файл",
       "complaint": {
         "created": "Жалоба была создана",
         "updated_from": "Статус жалобы обновлен с \"{oldStatus}\" на \"{newStatus}\"",
