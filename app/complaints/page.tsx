@@ -343,49 +343,57 @@ function ComplaintsPage() {
 
                   {/* Actions */}
                   {storeSelectedComplaint.status !== "resolved" && storeSelectedComplaint.status !== "closed" && (
-                    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
-                      <h3 className="text-lg font-semibold text-white mb-4">{t("actions.title")}</h3>
-                      <div className="flex flex-wrap gap-3">
-                        {/* Staff can escalate */}
-                        {isStaff && storeSelectedComplaint.status !== "escalated" && (
-                          <button
-                            onClick={() => setShowEscalateModal(true)}
-                            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
-                          >
-                            {t("actions.escalate")}
-                          </button>
-                        )}
-
-                        {/* Manager/Owner: if escalated and unclaimed, only show claim button */}
-                        {(isManager || isOwner) && storeSelectedComplaint.status === "escalated" && !storeSelectedComplaint.claimed_by_user_id && (
-                          <button
-                            onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
-                          >
-                            {t("actions.claim")}
-                          </button>
-                        )}
-
-                        {/* Manager/Owner: if escalated and claimed OR not escalated, show resolve and close buttons */}
-                        {(isManager || isOwner) && (storeSelectedComplaint.status !== "escalated" || storeSelectedComplaint.claimed_by_user_id) && (
-                          <>
+                    (isStaff && storeSelectedComplaint.status !== "escalated" && !storeSelectedComplaint.claimed_by_user_id) ||
+                    ((isManager || isOwner) && storeSelectedComplaint.status === "escalated")
+                  ) && (
+                      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">{t("actions.title")}</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {/* Staff can escalate only if not claimed by anyone */}
+                          {isStaff && storeSelectedComplaint.status !== "escalated" && !storeSelectedComplaint.claimed_by_user_id && (
                             <button
-                              onClick={() => setShowResolveModal(true)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
+                              onClick={() => setShowEscalateModal(true)}
+                              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium cursor-pointer"
                             >
-                              {t("actions.resolve")}
+                              {t("actions.escalate")}
                             </button>
-                            <button
-                              onClick={() => setShowCloseModal(true)}
-                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
-                            >
-                              {t("actions.close")}
-                            </button>
-                          </>
-                        )}
+                          )}
+
+                          {/* Manager/Owner can only interact with escalated complaints */}
+                          {(isManager || isOwner) && storeSelectedComplaint.status === "escalated" && (
+                            <>
+                              {/* Show claim button if unclaimed */}
+                              {!storeSelectedComplaint.claimed_by_user_id && (
+                                <button
+                                  onClick={() => handleClaim(storeSelectedComplaint.complaint_id)}
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
+                                >
+                                  {t("actions.claim")}
+                                </button>
+                              )}
+
+                              {/* Show resolve and close buttons only if claimed */}
+                              {storeSelectedComplaint.claimed_by_user_id && (
+                                <>
+                                  <button
+                                    onClick={() => setShowResolveModal(true)}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
+                                  >
+                                    {t("actions.resolve")}
+                                  </button>
+                                  <button
+                                    onClick={() => setShowCloseModal(true)}
+                                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+                                  >
+                                    {t("actions.close")}
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* History */}
                   <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
